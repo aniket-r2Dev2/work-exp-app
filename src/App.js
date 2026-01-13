@@ -6,17 +6,40 @@ import SummaryCard from './components/cards/SummaryCard';
 import ExperienceCard from './components/cards/ExperienceCard';
 import ExperienceForm from './components/forms/ExperienceForm';
 import Button from './components/common/Button';
+import DataControls from './components/common/DataControls';
 import { Plus } from 'lucide-react';
 
 const App = () => {
-  const { experiences, showForm, addExperience, removeExperience, toggleForm } = useExperience();
+  const { 
+    experiences, 
+    showForm, 
+    addExperience, 
+    removeExperience, 
+    toggleForm,
+    exportData,
+    importData,
+    clearAllData
+  } = useExperience();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-linkedin-50 via-white to-linkedin-100">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <Header />
         
-        <SummaryCard experiences={experiences} />
+        {/* Summary Card with Data Controls */}
+        <div className="mb-8">
+          <SummaryCard experiences={experiences} />
+          
+          {/* Data Management Controls */}
+          <div className="mt-4 flex justify-end">
+            <DataControls
+              onExport={exportData}
+              onImport={importData}
+              onClear={clearAllData}
+              experienceCount={experiences.length}
+            />
+          </div>
+        </div>
 
         {showForm && (
           <ExperienceForm
