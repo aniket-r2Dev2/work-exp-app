@@ -3,10 +3,19 @@ import { Building2, MapPin, Calendar, Award, Trash2 } from 'lucide-react';
 import { calculateDuration, formatDate } from '../../utils/dateUtils';
 
 const ExperienceCard = ({ experience, onRemove, index }) => {
-  // Ensure logo URL uses HTTPS
-  const logoUrl = experience.companyLogo 
-    ? experience.companyLogo.replace('http://', 'https://') 
-    : null;
+  // Ensure logo URL uses HTTPS and handle Clearbit logo
+  const getLogoUrl = () => {
+    if (!experience.companyLogo) {
+      // Try to generate from domain if available
+      if (experience.companyDomain) {
+        return `https://logo.clearbit.com/${experience.companyDomain}`;
+      }
+      return null;
+    }
+    return experience.companyLogo.replace('http://', 'https://');
+  };
+
+  const logoUrl = getLogoUrl();
 
   return (
     <div
@@ -34,8 +43,19 @@ const ExperienceCard = ({ experience, onRemove, index }) => {
                     // Hide image and show fallback icon
                     e.target.style.display = 'none';
                     const parent = e.target.parentElement;
-                    if (parent) {
-                      parent.innerHTML = '<svg class="w-6 h-6 text-gray-400 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>';
+                    if (parent && !parent.querySelector('svg')) {
+                      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                      svg.setAttribute('class', 'w-6 h-6 text-gray-400 dark:text-gray-300');
+                      svg.setAttribute('fill', 'none');
+                      svg.setAttribute('stroke', 'currentColor');
+                      svg.setAttribute('viewBox', '0 0 24 24');
+                      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                      path.setAttribute('stroke-linecap', 'round');
+                      path.setAttribute('stroke-linejoin', 'round');
+                      path.setAttribute('stroke-width', '2');
+                      path.setAttribute('d', 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4');
+                      svg.appendChild(path);
+                      parent.appendChild(svg);
                     }
                   }}
                 />
@@ -61,8 +81,9 @@ const ExperienceCard = ({ experience, onRemove, index }) => {
             <div className="flex items-center">
               <Calendar className="w-4 h-4 mr-1" />
               <span>
-                {formatDate(experience.startDate)} - 
-                {experience.current ? ' Present' : ` ${formatDate(experience.endDate)}`}
+                {formatDate(experience.startDate)}
+                {' - '}
+                {experience.current ? 'Present' : formatDate(experience.endDate)}
               </span>
             </div>
             <div className="flex items-center gap-4">

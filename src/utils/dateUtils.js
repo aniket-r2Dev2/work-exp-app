@@ -10,14 +10,29 @@ export const calculateDuration = (start, end, isCurrent) => {
   const timeDiff = endDate.getTime() - startDate.getTime();
   const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
   
+  // If less than 1 day, show 1 day
+  if (daysDiff < 1) {
+    return '1 day';
+  }
+  
   // If less than 30 days, show in days
   if (daysDiff < 30) {
     return `${daysDiff} day${daysDiff !== 1 ? 's' : ''}`;
   }
   
-  // Calculate months
-  const months = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
-                 (endDate.getMonth() - startDate.getMonth());
+  // Calculate months more accurately
+  let months = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
+               (endDate.getMonth() - startDate.getMonth());
+  
+  // Add 1 month if we've passed the start day in the end month
+  if (endDate.getDate() >= startDate.getDate()) {
+    months += 1;
+  }
+  
+  // Ensure minimum of 1 month if there's any duration
+  if (months < 1 && daysDiff >= 1) {
+    months = 1;
+  }
   
   // If less than 12 months, show in months
   if (months < 12) {
@@ -36,13 +51,13 @@ export const calculateDuration = (start, end, isCurrent) => {
 };
 
 export const formatDate = (dateString) => {
-  // Handle empty or invalid date
-  if (!dateString) return 'Invalid Date';
+  // Handle empty or invalid date - return empty string for current positions
+  if (!dateString) return '';
   
   const date = new Date(dateString);
   
   // Check if date is valid
-  if (isNaN(date.getTime())) return 'Invalid Date';
+  if (isNaN(date.getTime())) return '';
   
   return date.toLocaleDateString('en-US', { 
     month: 'short', 
@@ -62,8 +77,19 @@ export const getTotalExperience = (experiences) => {
     if (isNaN(startDate.getTime())) return;
     if (!exp.current && isNaN(endDate.getTime())) return;
     
-    const months = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
-                   (endDate.getMonth() - startDate.getMonth());
+    let months = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
+                 (endDate.getMonth() - startDate.getMonth());
+    
+    // Add 1 month if we've passed the start day
+    if (endDate.getDate() >= startDate.getDate()) {
+      months += 1;
+    }
+    
+    // Ensure minimum of 1 month
+    if (months < 1) {
+      months = 1;
+    }
+    
     totalMonths += months;
   });
 
@@ -72,10 +98,12 @@ export const getTotalExperience = (experiences) => {
   if (totalMonths < 12) {
     return `${totalMonths} month${totalMonths !== 1 ? 's' : ''}`;
   }
+  
   const years = Math.floor(totalMonths / 12);
   const remainingMonths = totalMonths % 12;
   
-  let duration = `${years} year${years !== 1 ? 's' : ''}`;  if (remainingMonths > 0) {
+  let duration = `${years} year${years !== 1 ? 's' : ''}`;
+  if (remainingMonths > 0) {
     duration += ` ${remainingMonths} month${remainingMonths !== 1 ? 's' : ''}`;
   }
   return duration;
