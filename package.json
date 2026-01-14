@@ -2,7 +2,7 @@
   "name": "work-exp-app",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://gitforaniket.github.io/work-exp-app",
+  "homepage": "https://aniket-r2dev2.github.io/work-exp-app",
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
