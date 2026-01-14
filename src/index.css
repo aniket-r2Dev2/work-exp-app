@@ -2,20 +2,59 @@
 @tailwind components;
 @tailwind utilities;
 
-@keyframes fade-in {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+@layer base {
+  body {
+    @apply bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900;
+  }
 }
 
 @keyframes slide-up {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.animate-fade-in {
-  animation: fade-in 0.6s ease-out;
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-slide-up {
   animation: slide-up 0.5s ease-out forwards;
+}
+
+/* Print styles for resume */
+@media print {
+  @page {
+    size: letter;
+    margin: 0.5in;
+  }
+  
+  body {
+    background: white !important;
+  }
+  
+  .print\:hidden {
+    display: none !important;
+  }
+  
+  .print\:shadow-none {
+    box-shadow: none !important;
+  }
+  
+  #resume-preview {
+    box-shadow: none !important;
+    page-break-after: auto;
+    margin: 0 !important;
+    padding: 0.5in !important;
+  }
+  
+  /* Hide everything except resume */
+  body > *:not(.print\:block) {
+    display: none !important;
+  }
+  
+  #resume-preview {
+    display: block !important;
+  }
 }
