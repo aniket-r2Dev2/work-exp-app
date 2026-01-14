@@ -78,46 +78,63 @@ export const formatDate = (dateString) => {
 export const getTotalExperience = (experiences) => {
   if (experiences.length === 0) return "0 months";
   
-  let totalMonths = 0;
+  let totalDays = 0;
+  
   experiences.forEach(exp => {
+    // If only month and year are provided, default to the 1st of that month
     const startDate = new Date(exp.startDate);
+    // Set to 1st if the date seems to be only year-month
+    if (startDate.getDate() !== 1 && !exp.startDate.includes('-') || exp.startDate.split('-').length === 2) {
+      startDate.setDate(1);
+    }
+    
     const endDate = exp.current ? new Date() : new Date(exp.endDate);
+    // Set to 1st if the date seems to be only year-month
+    if (!exp.current && endDate.getDate() !== 1 && (!exp.endDate.includes('-') || exp.endDate.split('-').length === 2)) {
+      endDate.setDate(1);
+    }
     
     // Skip invalid dates
     if (isNaN(startDate.getTime())) return;
     if (!exp.current && isNaN(endDate.getTime())) return;
     
-    // Calculate months using same logic as calculateDuration
-    const yearDiff = endDate.getFullYear() - startDate.getFullYear();
-    const monthDiff = endDate.getMonth() - startDate.getMonth();
-    const dayDiff = endDate.getDate() - startDate.getDate();
+    // Calculate total days for this experience
+    const timeDiff = endDate.getTime() - startDate.getTime();
+    const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
     
-    let months = yearDiff * 12 + monthDiff;
-    
-    if (dayDiff >= 0) {
-      months += 1;
+    if (daysDiff > 0) {
+      totalDays += daysDiff;
     }
-    
-    // Ensure minimum of 1 month
-    if (months < 1) {
-      months = 1;
-    }
-    
-    totalMonths += months;
   });
 
-  if (totalMonths === 0) return "0 months";
+  if (totalDays === 0) return "0 days";
   
-  if (totalMonths < 12) {
-    return `${totalMonths} month${totalMonths !== 1 ? 's' : ''}`;
+  // If less than 30 days, show in days only
+  if (totalDays < 30) {
+    return `${totalDays} day${totalDays !== 1 ? 's' : ''}`;
   }
   
-  const years = Math.floor(totalMonths / 12);
-  const remainingMonths = totalMonths % 12;
+  // Calculate years, months, and remaining days
+  const years = Math.floor(totalDays / 365);
+  const remainingDaysAfterYears = totalDays % 365;
+  const months = Math.floor(remainingDaysAfterYears / 30);
+  const days = remainingDaysAfterYears % 30;
   
-  let duration = `${years} year${years !== 1 ? 's' : ''}`;
-  if (remainingMonths > 0) {
-    duration += ` ${remainingMonths} month${remainingMonths !== 1 ? 's' : ''}`;
+  let duration = '';
+  
+  if (years > 0) {
+    duration += `${years} year${years !== 1 ? 's' : ''}`;
   }
-  return duration;
+  
+  if (months > 0) {
+    if (duration) duration += ' ';
+    duration += `${months} month${months !== 1 ? 's' : ''}`;
+  }
+  
+  if (days > 0) {
+    if (duration) duration += ' ';
+    duration += `${days} day${days !== 1 ? 's' : ''}`;
+  }
+  
+  return duration || "0 days";
 };
