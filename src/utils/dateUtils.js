@@ -84,7 +84,7 @@ export const getTotalExperience = (experiences) => {
     // If only month and year are provided, default to the 1st of that month
     const startDate = new Date(exp.startDate);
     // Set to 1st if the date seems to be only year-month
-    if (startDate.getDate() !== 1 && !exp.startDate.includes('-') || exp.startDate.split('-').length === 2) {
+    if (startDate.getDate() !== 1 && (!exp.startDate.includes('-') || exp.startDate.split('-').length === 2)) {
       startDate.setDate(1);
     }
     
