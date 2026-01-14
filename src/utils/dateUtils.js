@@ -10,6 +10,11 @@ export const calculateDuration = (start, end, isCurrent) => {
   const timeDiff = endDate.getTime() - startDate.getTime();
   const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
   
+  // Handle negative duration (future start date)
+  if (daysDiff < 0) {
+    return '0 days';
+  }
+  
   // If less than 1 day, show 1 day
   if (daysDiff < 1) {
     return '1 day';
@@ -20,28 +25,33 @@ export const calculateDuration = (start, end, isCurrent) => {
     return `${daysDiff} day${daysDiff !== 1 ? 's' : ''}`;
   }
   
-  // Calculate months more accurately
-  let months = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
-               (endDate.getMonth() - startDate.getMonth());
+  // Calculate months - simpler and more accurate method
+  const yearDiff = endDate.getFullYear() - startDate.getFullYear();
+  const monthDiff = endDate.getMonth() - startDate.getMonth();
+  const dayDiff = endDate.getDate() - startDate.getDate();
   
-  // Add 1 month if we've passed the start day in the end month
-  if (endDate.getDate() >= startDate.getDate()) {
-    months += 1;
+  // Total months calculation
+  let totalMonths = yearDiff * 12 + monthDiff;
+  
+  // If we haven't reached the start day yet in the current month, don't count this month
+  // If we have passed the start day, count the full month
+  if (dayDiff >= 0) {
+    totalMonths += 1;
   }
   
-  // Ensure minimum of 1 month if there's any duration
-  if (months < 1 && daysDiff >= 1) {
-    months = 1;
+  // Ensure minimum of 1 month if there's any duration >= 30 days
+  if (totalMonths < 1 && daysDiff >= 30) {
+    totalMonths = 1;
   }
   
   // If less than 12 months, show in months
-  if (months < 12) {
-    return `${months} month${months !== 1 ? 's' : ''}`;
+  if (totalMonths < 12) {
+    return `${totalMonths} month${totalMonths !== 1 ? 's' : ''}`;
   }
   
   // Show in years and months
-  const years = Math.floor(months / 12);
-  const remainingMonths = months % 12;
+  const years = Math.floor(totalMonths / 12);
+  const remainingMonths = totalMonths % 12;
   
   let duration = `${years} year${years !== 1 ? 's' : ''}`;
   if (remainingMonths > 0) {
@@ -77,11 +87,14 @@ export const getTotalExperience = (experiences) => {
     if (isNaN(startDate.getTime())) return;
     if (!exp.current && isNaN(endDate.getTime())) return;
     
-    let months = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
-                 (endDate.getMonth() - startDate.getMonth());
+    // Calculate months using same logic as calculateDuration
+    const yearDiff = endDate.getFullYear() - startDate.getFullYear();
+    const monthDiff = endDate.getMonth() - startDate.getMonth();
+    const dayDiff = endDate.getDate() - startDate.getDate();
     
-    // Add 1 month if we've passed the start day
-    if (endDate.getDate() >= startDate.getDate()) {
+    let months = yearDiff * 12 + monthDiff;
+    
+    if (dayDiff >= 0) {
       months += 1;
     }
     

@@ -2,17 +2,132 @@ import React from 'react';
 import { Building2, MapPin, Calendar, Award, Trash2 } from 'lucide-react';
 import { calculateDuration, formatDate } from '../../utils/dateUtils';
 
+// Common company domain mappings for better logo fetching
+const COMPANY_DOMAINS = {
+  'google': 'google.com',
+  'microsoft': 'microsoft.com',
+  'apple': 'apple.com',
+  'amazon': 'amazon.com',
+  'meta': 'meta.com',
+  'facebook': 'meta.com',
+  'netflix': 'netflix.com',
+  'tesla': 'tesla.com',
+  'twitter': 'x.com',
+  'x': 'x.com',
+  'linkedin': 'linkedin.com',
+  'uber': 'uber.com',
+  'airbnb': 'airbnb.com',
+  'spotify': 'spotify.com',
+  'adobe': 'adobe.com',
+  'salesforce': 'salesforce.com',
+  'oracle': 'oracle.com',
+  'ibm': 'ibm.com',
+  'intel': 'intel.com',
+  'nvidia': 'nvidia.com',
+  'amd': 'amd.com',
+  'cisco': 'cisco.com',
+  'hp': 'hp.com',
+  'dell': 'dell.com',
+  'sap': 'sap.com',
+  'vmware': 'vmware.com',
+  'slack': 'slack.com',
+  'zoom': 'zoom.us',
+  'dropbox': 'dropbox.com',
+  'github': 'github.com',
+  'gitlab': 'gitlab.com',
+  'atlassian': 'atlassian.com',
+  'stripe': 'stripe.com',
+  'paypal': 'paypal.com',
+  'square': 'squareup.com',
+  'shopify': 'shopify.com',
+  'twilio': 'twilio.com',
+  'mongodb': 'mongodb.com',
+  'redis': 'redis.com',
+  'elastic': 'elastic.co',
+  'docker': 'docker.com',
+  'aws': 'aws.amazon.com',
+  'gcp': 'cloud.google.com',
+  'azure': 'azure.microsoft.com',
+  'accenture': 'accenture.com',
+  'deloitte': 'deloitte.com',
+  'pwc': 'pwc.com',
+  'ey': 'ey.com',
+  'kpmg': 'kpmg.com',
+  'mckinsey': 'mckinsey.com',
+  'bain': 'bain.com',
+  'bcg': 'bcg.com',
+  'jpmorgan': 'jpmorganchase.com',
+  'goldman sachs': 'goldmansachs.com',
+  'morgan stanley': 'morganstanley.com',
+  'citigroup': 'citigroup.com',
+  'bank of america': 'bankofamerica.com',
+  'wells fargo': 'wellsfargo.com',
+  'visa': 'visa.com',
+  'mastercard': 'mastercard.com',
+  'american express': 'americanexpress.com',
+  'okta': 'okta.com',
+  'auth0': 'auth0.com',
+  'databricks': 'databricks.com',
+  'snowflake': 'snowflake.com',
+  'confluent': 'confluent.io',
+  'hashicorp': 'hashicorp.com',
+  'datadog': 'datadoghq.com',
+  'pagerduty': 'pagerduty.com',
+  'splunk': 'splunk.com',
+  'cloudflare': 'cloudflare.com',
+  'fastly': 'fastly.com',
+  'akamai': 'akamai.com'
+};
+
+// Function to guess company domain from name
+const guessDomain = (companyName) => {
+  if (!companyName) return null;
+  
+  // Normalize company name: lowercase, remove special chars, trim
+  const normalized = companyName.toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .trim();
+  
+  // Check if we have a known mapping
+  if (COMPANY_DOMAINS[normalized]) {
+    return COMPANY_DOMAINS[normalized];
+  }
+  
+  // Try without spaces (e.g., "Goldman Sachs" -> "goldmansachs")
+  const noSpaces = normalized.replace(/\s+/g, '');
+  if (COMPANY_DOMAINS[noSpaces]) {
+    return COMPANY_DOMAINS[noSpaces];
+  }
+  
+  // Fallback: use first word + .com (e.g., "Acme Corporation" -> "acme.com")
+  const firstWord = normalized.split(/\s+/)[0];
+  if (firstWord && firstWord.length > 2) {
+    return `${firstWord}.com`;
+  }
+  
+  return null;
+};
+
 const ExperienceCard = ({ experience, onRemove, index }) => {
   // Ensure logo URL uses HTTPS and handle Clearbit logo
   const getLogoUrl = () => {
-    if (!experience.companyLogo) {
-      // Try to generate from domain if available
-      if (experience.companyDomain) {
-        return `https://logo.clearbit.com/${experience.companyDomain}`;
-      }
-      return null;
+    // 1. Try provided logo URL first
+    if (experience.companyLogo) {
+      return experience.companyLogo.replace('http://', 'https://');
     }
-    return experience.companyLogo.replace('http://', 'https://');
+    
+    // 2. Try provided domain
+    if (experience.companyDomain) {
+      return `https://logo.clearbit.com/${experience.companyDomain}`;
+    }
+    
+    // 3. Try to guess domain from company name
+    const guessedDomain = guessDomain(experience.company);
+    if (guessedDomain) {
+      return `https://logo.clearbit.com/${guessedDomain}`;
+    }
+    
+    return null;
   };
 
   const logoUrl = getLogoUrl();
