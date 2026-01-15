@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, Phone, MapPin, Linkedin, Globe, Calendar, Building2 } from 'lucide-react';
+import { Mail, Phone, MapPin, Linkedin, Globe, Calendar, Building2, Code2 } from 'lucide-react';
 import { formatDate, calculateDuration } from '../../utils/dateUtils';
 
 const ResumePreview = ({ profile, experiences }) => {
@@ -9,6 +9,13 @@ const ResumePreview = ({ profile, experiences }) => {
     const dateB = new Date(b.startDate);
     return dateB - dateA;
   });
+
+  // Extract all unique skills from experiences
+  const allSkills = [...new Set(
+    sortedExperiences
+      .filter(exp => exp.skills && exp.skills.length > 0)
+      .flatMap(exp => exp.skills)
+  )];
 
   return (
     <div id="resume-preview" className="bg-white shadow-2xl rounded-lg p-12 max-w-4xl mx-auto" style={{ minHeight: '842px', fontFamily: 'Georgia, serif' }}>
@@ -73,6 +80,26 @@ const ResumePreview = ({ profile, experiences }) => {
         </div>
       )}
 
+      {/* Skills Section */}
+      {allSkills.length > 0 && (
+        <div className="mb-8">
+          <h3 className="text-xl font-bold text-gray-900 mb-3 uppercase tracking-wide border-b border-gray-300 pb-2 flex items-center">
+            <Code2 className="w-5 h-5 mr-2" />
+            Technical Skills
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {allSkills.map((skill, index) => (
+              <span
+                key={index}
+                className="inline-block px-3 py-1 bg-gray-100 text-gray-800 rounded text-sm font-medium"
+              >
+                {skill}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Work Experience */}
       {sortedExperiences.length > 0 && (
         <div className="mb-8">
@@ -111,6 +138,16 @@ const ResumePreview = ({ profile, experiences }) => {
                   <p className="text-gray-700 mb-3 leading-relaxed">
                     {exp.description}
                   </p>
+                )}
+
+                {/* Skills for this experience */}
+                {exp.skills && exp.skills.length > 0 && (
+                  <div className="mb-3">
+                    <p className="text-sm text-gray-600 font-semibold mb-1">Technologies:</p>
+                    <p className="text-sm text-gray-700">
+                      {exp.skills.join(' • ')}
+                    </p>
+                  </div>
                 )}
 
                 {exp.achievements && exp.achievements.length > 0 && exp.achievements[0] !== '' && (
