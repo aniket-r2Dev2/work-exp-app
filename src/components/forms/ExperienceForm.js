@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Building2, MapPin, Calendar, Award, Trash2 } from 'lucide-react';
+import { Plus, Building2, MapPin, Calendar, Award, Trash2, Code2, X } from 'lucide-react';
 import Input from '../common/Input';
 import Button from '../common/Button';
 import jobTitlesConfig from '../../config/jobTitles.json';
@@ -29,6 +29,17 @@ const filterCities = (query) => {
     .slice(0, 10);
 };
 
+// Common skills/technologies for suggestions
+const commonSkills = [
+  'JavaScript', 'TypeScript', 'Python', 'Java', 'C++', 'C#', 'Go', 'Rust', 'Swift', 'Kotlin',
+  'React', 'Angular', 'Vue.js', 'Node.js', 'Express', 'Django', 'Flask', 'Spring Boot',
+  'HTML', 'CSS', 'Tailwind CSS', 'Bootstrap', 'SASS', 'Material-UI',
+  'MongoDB', 'PostgreSQL', 'MySQL', 'Redis', 'Firebase', 'AWS', 'Azure', 'GCP',
+  'Docker', 'Kubernetes', 'Jenkins', 'Git', 'GitHub', 'GitLab', 'CI/CD',
+  'REST API', 'GraphQL', 'Microservices', 'Agile', 'Scrum', 'Jira',
+  'TensorFlow', 'PyTorch', 'Machine Learning', 'Data Analysis', 'SQL'
+];
+
 const ExperienceForm = ({ onSubmit, onCancel, showCancel }) => {
   const [formData, setFormData] = useState({
     company: '',
@@ -36,12 +47,13 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel }) => {
     companyLogo: '',
     position: '',
     location: '',
-  category: 'Full-time',
+    category: 'Full-time',
     startDate: '',
     endDate: '',
     current: false,
     description: '',
-    achievements: ['']
+    achievements: [''],
+    skills: [] // New field for skills
   });
   const [companyQuery, setCompanyQuery] = useState('');
   const [companySuggestions, setCompanySuggestions] = useState([]);
@@ -58,6 +70,12 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel }) => {
   const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
   const [locationSelectedIndex, setLocationSelectedIndex] = useState(-1);
 
+  // Skills input state
+  const [skillInput, setSkillInput] = useState('');
+  const [skillSuggestions, setSkillSuggestions] = useState([]);
+  const [showSkillSuggestions, setShowSkillSuggestions] = useState(false);
+  const [skillSelectedIndex, setSkillSelectedIndex] = useState(-1);
+
   // Reset selected indices when suggestions change
   useEffect(() => {
     setCompanySelectedIndex(-1);
@@ -70,6 +88,26 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel }) => {
   useEffect(() => {
     setLocationSelectedIndex(-1);
   }, [locationSuggestions]);
+
+  useEffect(() => {
+    setSkillSelectedIndex(-1);
+  }, [skillSuggestions]);
+
+  // Skills suggestions
+  useEffect(() => {
+    if (skillInput.length < 1) {
+      setSkillSuggestions([]);
+      return;
+    }
+    const lowercaseQuery = skillInput.toLowerCase();
+    const filtered = commonSkills
+      .filter(skill => 
+        skill.toLowerCase().includes(lowercaseQuery) && 
+        !formData.skills.includes(skill)
+      )
+      .slice(0, 8);
+    setSkillSuggestions(filtered);
+  }, [skillInput, formData.skills]);
 
   useEffect(() => {
     if (companyQuery.length < 2) {
@@ -98,11 +136,11 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel }) => {
     // Only if we have less than 5 local suggestions and query is longer
     if (localSuggestions.length < 5 && positionQuery.length >= 3) {
       const controller = new AbortController();
-              fetch(`https://jsearch.p.rapidapi.com/search?query=${encodeURIComponent(positionQuery)}&num_pages=1`, {
-          headers: {
-            'X-RapidAPI-Host': 'jsearch.p.rapidapi.com',
-            'X-RapidAPI-Key': process.env.REACT_APP_JSEARCH_API_KEY
-          },
+      fetch(`https://jsearch.p.rapidapi.com/search?query=${encodeURIComponent(positionQuery)}&num_pages=1`, {
+        headers: {
+          'X-RapidAPI-Host': 'jsearch.p.rapidapi.com',
+          'X-RapidAPI-Key': process.env.REACT_APP_JSEARCH_API_KEY
+        },
         signal: controller.signal
       })
         .then(res => res.json())
@@ -250,6 +288,41 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel }) => {
     }
   };
 
+  const handleSkillKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (skillSelectedIndex >= 0 && skillSuggestions.length > 0) {
+        addSkill(skillSuggestions[skillSelectedIndex]);
+      } else if (skillInput.trim()) {
+        addSkill(skillInput.trim());
+      }
+      return;
+    }
+
+    if (!showSkillSuggestions || skillSuggestions.length === 0) return;
+    
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSkillSelectedIndex(prev => 
+          prev < skillSuggestions.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSkillSelectedIndex(prev => 
+          prev > 0 ? prev - 1 : skillSuggestions.length - 1
+        );
+        break;
+      case 'Escape':
+        setShowSkillSuggestions(false);
+        setSkillSelectedIndex(-1);
+        break;
+      default:
+        break;
+    }
+  };
+
   const handleCompanyInput = (e) => {
     const value = e.target.value;
     setCompanyQuery(value);
@@ -289,6 +362,7 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel }) => {
     setFormData(prev => ({ ...prev, location: value }));
     setShowLocationSuggestions(true);
   };
+  
   const handleLocationSelect = (city) => {
     setFormData(prev => ({ ...prev, location: city }));
     setLocationQuery(city);
@@ -324,6 +398,27 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel }) => {
     }));
   };
 
+  // Skills handlers
+  const addSkill = (skill) => {
+    const trimmedSkill = skill.trim();
+    if (trimmedSkill && !formData.skills.includes(trimmedSkill)) {
+      setFormData(prev => ({
+        ...prev,
+        skills: [...prev.skills, trimmedSkill]
+      }));
+      setSkillInput('');
+      setShowSkillSuggestions(false);
+      setSkillSelectedIndex(-1);
+    }
+  };
+
+  const removeSkill = (skillToRemove) => {
+    setFormData(prev => ({
+      ...prev,
+      skills: prev.skills.filter(skill => skill !== skillToRemove)
+    }));
+  };
+
   const handleSubmit = () => {
     if (!formData.company || !formData.position || !formData.startDate) {
       alert('Please fill in all required fields');
@@ -331,7 +426,7 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel }) => {
     }
 
     onSubmit({
-  ...formData,
+      ...formData,
       id: Date.now().toString()
     });
 
@@ -341,20 +436,23 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel }) => {
       companyDomain: '',
       companyLogo: '',
       position: '',
-  category: 'Full-time',
+      category: 'Full-time',
       location: '',
       startDate: '',
       endDate: '',
       current: false,
       description: '',
-      achievements: ['']
+      achievements: [''],
+      skills: []
     });
     setCompanyQuery('');
     setPositionQuery('');
     setLocationQuery('');
+    setSkillInput('');
     setCompanySelectedIndex(-1);
     setPositionSelectedIndex(-1);
     setLocationSelectedIndex(-1);
+    setSkillSelectedIndex(-1);
   };
 
   return (
@@ -510,7 +608,7 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel }) => {
 
         <div className="grid md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700">Experience Category</label>
+            <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Experience Category</label>
             <select
               id="category"
               name="category"
@@ -552,7 +650,7 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel }) => {
                 onChange={handleInputChange}
                 className="w-4 h-4 text-linkedin-600 rounded focus:ring-linkedin-500"
               />
-              <span className="ml-2 text-sm text-gray-600">Currently working here</span>
+              <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Currently working here</span>
             </label>
           </div>
           <Input
@@ -566,8 +664,8 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel }) => {
           />
         </div>
 
-      <div className="space-y-2">
-          <label htmlFor="job-description" className="block text-sm font-medium text-gray-700">Job Description</label>
+        <div className="space-y-2">
+          <label htmlFor="job-description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Job Description</label>
           <textarea
             id="job-description"
             name="description"
@@ -579,8 +677,68 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel }) => {
           />
         </div>
 
+        {/* Skills Section */}
+        <div className="space-y-3">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
+            <Code2 className="w-4 h-4 mr-2" />
+            Skills & Technologies
+          </label>
+          <div className="relative">
+            <input
+              type="text"
+              value={skillInput}
+              onChange={(e) => {
+                setSkillInput(e.target.value);
+                setShowSkillSuggestions(true);
+              }}
+              onKeyDown={handleSkillKeyDown}
+              onFocus={() => setShowSkillSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSkillSuggestions(false), 200)}
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-linkedin-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400"
+              placeholder="Type and press Enter to add skills (e.g., React, Python, AWS)"
+            />
+            {showSkillSuggestions && skillSuggestions.length > 0 && (
+              <ul className="absolute z-10 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 w-full mt-1 rounded shadow-lg max-h-48 overflow-y-auto">
+                {skillSuggestions.map((skill, index) => (
+                  <li
+                    key={index}
+                    className={`px-4 py-2 cursor-pointer text-gray-800 dark:text-gray-100 ${
+                      index === skillSelectedIndex 
+                        ? 'bg-linkedin-100 text-linkedin-800 dark:bg-linkedin-800 dark:text-linkedin-100' 
+                        : 'hover:bg-linkedin-50 dark:hover:bg-slate-700'
+                    }`}
+                    onMouseDown={() => addSkill(skill)}
+                    onMouseEnter={() => setSkillSelectedIndex(index)}
+                  >
+                    {skill}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          {formData.skills.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              {formData.skills.map((skill, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-linkedin-100 text-linkedin-800 dark:bg-linkedin-900 dark:text-linkedin-200"
+                >
+                  {skill}
+                  <button
+                    type="button"
+                    onClick={() => removeSkill(skill)}
+                    className="ml-2 inline-flex items-center justify-center w-4 h-4 rounded-full hover:bg-linkedin-200 dark:hover:bg-linkedin-800 transition-colors"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
         <div className="space-y-4">
-          <label className="block text-sm font-medium text-gray-700 flex items-center">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
             <Award className="w-4 h-4 mr-2" />
             Key Achievements
           </label>
@@ -597,7 +755,7 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel }) => {
                 <button
                   type="button"
                   onClick={() => removeAchievement(index)}
-                  className="px-3 py-3 text-red-500 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                  className="px-3 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors duration-200"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
