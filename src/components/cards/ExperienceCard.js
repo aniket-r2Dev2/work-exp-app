@@ -1,5 +1,5 @@
 import React from 'react';
-import { Building2, MapPin, Calendar, Award, Trash2 } from 'lucide-react';
+import { Building2, MapPin, Calendar, Award, Trash2, Code2 } from 'lucide-react';
 import { calculateDuration, formatDate } from '../../utils/dateUtils';
 
 // Common company domain mappings for better logo fetching
@@ -215,6 +215,26 @@ const ExperienceCard = ({ experience, onRemove, index }) => {
 
           {experience.description && (
             <p className="text-gray-700 dark:text-gray-200 mb-4 leading-relaxed">{experience.description}</p>
+          )}
+
+          {/* Skills Section */}
+          {experience.skills && experience.skills.length > 0 && (
+            <div className="mb-4">
+              <h4 className="font-semibold text-gray-800 dark:text-white mb-2 flex items-center">
+                <Code2 className="w-4 h-4 mr-2 text-linkedin-600" />
+                Skills & Technologies
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {experience.skills.map((skill, i) => (
+                  <span
+                    key={i}
+                    className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-linkedin-50 text-linkedin-700 dark:bg-linkedin-900/30 dark:text-linkedin-300 border border-linkedin-200 dark:border-linkedin-700"
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
           )}
 
           {experience.achievements && experience.achievements.length > 0 && (
