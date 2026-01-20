@@ -2,15 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  body {
-    @apply bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900;
-  }
+:root {
+  --linkedin-50: #e8f4f8;
+  --linkedin-100: #cfe9f3;
+  --linkedin-200: #9ed3e6;
+  --linkedin-400: #3d9bc7;
+  --linkedin-500: #0a66c2;
+  --linkedin-600: #004182;
+  --linkedin-700: #003366;
+  --linkedin-800: #002952;
+  --linkedin-900: #001f3f;
 }
 
-@keyframes fade-in {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
 }
 
 @keyframes slide-up {
@@ -24,46 +39,80 @@
   }
 }
 
-.animate-fade-in {
-  animation: fade-in 0.6s ease-out;
-}
-
 .animate-slide-up {
-  animation: slide-up 0.5s ease-out forwards;
+  animation: slide-up 0.4s ease-out;
 }
 
-/* Print styles for resume */
+/* Print Styles */
 @media print {
-  @page {
-    size: letter;
-    margin: 0.5in;
+  /* Hide everything except the resume */
+  body * {
+    visibility: hidden;
   }
   
+  /* Show only the resume content */
+  [class*="Template"],
+  [class*="Template"] * {
+    visibility: visible;
+  }
+  
+  /* Position resume at top of page */
+  [class*="Template"] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+  
+  /* Remove backgrounds and shadows */
   body {
     background: white !important;
   }
   
-  .print\:hidden {
+  /* Page setup */
+  @page {
+    size: A4;
+    margin: 0;
+  }
+  
+  /* Remove any unnecessary margins */
+  html, body {
+    height: auto;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Ensure colors are printed */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  
+  /* Avoid page breaks inside elements */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+  
+  /* Prevent breaking inside experience items */
+  [class*="experience"],
+  [class*="education"],
+  [class*="certification"] {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  
+  /* Remove interactive elements */
+  button,
+  .no-print {
     display: none !important;
   }
-  
-  .print\:shadow-none {
-    box-shadow: none !important;
-  }
-  
-  #resume-preview {
-    box-shadow: none !important;
-    page-break-after: auto;
-    margin: 0 !important;
-    padding: 0.5in !important;
-  }
-  
-  /* Hide everything except resume */
-  body > *:not(.print\:block) {
-    display: none !important;
-  }
-  
-  #resume-preview {
-    display: block !important;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
   }
 }
