@@ -1,57 +1,64 @@
-# 🧰 Work Experience Tracker
+# 🧰 Work Experience Tracker & Resume Builder
 
-A beautiful and intuitive React application for tracking and showcasing your professional work experience. Built with modern design principles, smooth animations, and a focus on user experience.
+A beautiful and intuitive React application for tracking your professional work experience and generating professional resumes. Built with modern design principles, smooth animations, and a focus on user experience.
 
 ## ✨ Features
 
-- **🎨 Modern & Beautiful UI**
-  - Clean, minimal design with gradient backgrounds
-  - Smooth animations and transitions
-  - Responsive layout that works on all devices
-  - Eye-friendly color scheme with professional aesthetics
+### 📊 **Experience Management**
+- **Smart Experience Tracking**
+  - Real-time duration calculations (years, months, days)
+  - Company autocomplete with Clearbit API integration
+  - Job title autocomplete (300+ local titles + API suggestions)
+  - Location autocomplete (300+ major cities worldwide)
+  - Skills & technologies tracking per role
+  - Achievement management with bullet points
+  - Support for current positions
 
-- **📊 Smart Experience Management**
-  - Real-time calculations: Automatically calculates total work experience
-  - Company autocomplete: Integrated with Clearbit API for company logos and details
-  - **Job titles autocomplete: Fast local search + JSearch API for comprehensive position suggestions**
-  - **Location autocomplete: Smart city suggestions with 300+ major cities worldwide**
-  - Flexible date handling: Support for current positions and precise duration calculations
-  - Achievement tracking: Add and manage key accomplishments for each role
+### 📄 **Professional Resume Builder** ⭐ NEW
+- **Multiple Templates**
+  - **Classic** - Traditional serif design with timeline
+  - **Modern** - Contemporary with color accents and gradients
+  - **Minimal** - Clean, simple, and ATS-friendly
+- **PDF Export** - High-quality PDF generation with custom filename
+- **Print Support** - Optimized print layouts
+- **Template Switching** - Live preview with instant template changes
+- **Auto Sections** - Skills, Experience, Education, Certifications
 
-- **🚀 Enhanced User Experience**
-  - Interactive forms: Intuitive form with validation and smart defaults
-  - Dynamic content: Add, edit, and remove experiences with smooth animations
-  - Professional timeline: Visual representation of your career journey
-  - Export-ready format: Clean layout perfect for screenshots and presentations
+### 🎨 **Modern & Beautiful UI**
+- Clean, minimal design with gradient backgrounds
+- Smooth animations and transitions
+- Responsive layout that works on all devices
+- Dark mode support
+- Eye-friendly color scheme with professional aesthetics
 
-- **🎯 Key Capabilities**
-  - Track multiple work experiences across different companies
-  - Automatic company logo fetching and branding
-  - Location and role-based organization
-  - Achievement highlighting with bullet points
-  - Total experience calculation across all positions
-  - Professional summary cards with statistics
+### 🔧 **Data Management**
+- Export/Import data as JSON
+- LocalStorage persistence
+- Clear all data option
+- Merge or replace on import
 
-## 🏗️ Technical Stack
+## 📸 Screenshots
 
-- **React 19.1.0** – Latest React with modern hooks and features
-- **Tailwind CSS** – Utility-first CSS framework for rapid styling
-- **Lucide React** – Beautiful and consistent icons
-- **Clearbit API** – Company data and logo integration
-- **JSearch API** – Job titles and position data for comprehensive autocomplete
-- **GeoDB Cities API** – City data for location autocomplete (with local fallback)
-- **JSON Configuration** – External job titles and cities data for maintainability
-- **Modern JavaScript** – ES6+ features and best practices
+### Resume Templates
 
-## 📸 Preview
+**Classic Template**
+- Traditional professional design
+- Serif typography (Georgia)
+- Timeline-based experience layout
+- Black and white for maximum compatibility
 
-The application features:
+**Modern Template**
+- Contemporary blue gradient header
+- Color-coded sections
+- Card-style education blocks
+- Eye-catching skill pills
 
-- Header section with gradient branding and clear navigation
-- Summary card showing total experience and company count
-- Experience cards with company logos, duration badges, and achievement lists
-- Interactive forms with company autocomplete and date validation
-- Empty state with call-to-action for first-time users
+**Minimal Template**
+- Ultra-clean design
+- Maximum whitespace
+- Light typography
+- Simple borders and lines
+- Perfect for ATS systems
 
 ## 🚀 Getting Started
 
@@ -64,13 +71,15 @@ The application features:
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/gitforaniket/work-exp-app.git
-   cd work-experience-tracker
+   git clone https://github.com/aniket-r2Dev2/work-exp-app.git
+   cd work-exp-app
    ```
+
 2. **Install dependencies**
    ```bash
    npm install
    ```
+
 3. **Set up API keys (Optional but recommended)**
    ```bash
    # Create environment file
@@ -79,10 +88,12 @@ The application features:
    - Get your JSearch API key from [RapidAPI JSearch](https://rapidapi.com/letscrape-6bRBa3QguO5/api/jsearch)
    - Replace `your_api_key_here` with your actual API key
    - **Note:** The app works without the API key using local job titles only
+
 4. **Start the development server**
    ```bash
    npm start
    ```
+
 5. **Open your browser**
    - Navigate to [http://localhost:3000](http://localhost:3000) to view the application
 
@@ -95,246 +106,281 @@ This creates an optimized production build in the `build` folder.
 
 ## 🎯 How to Use
 
-- **Add Your First Experience**
-  - Click "Add Your First Experience" or the "+" button
-  - Fill in company details (autocomplete will suggest logos)
-  - **Add position with smart autocomplete** (300+ local titles + API suggestions)
-  - **Add location with city autocomplete** (300+ major cities worldwide)
-  - Add date information
-  - Include job description and key achievements
+### **Track Your Experience**
 
-- **Manage Your Timeline**
-  - View your total experience calculation
-  - Edit or remove existing experiences
-  - Mark current positions with the "Currently working here" checkbox
+1. **Add Your First Experience**
+   - Click "Add New Experience" button
+   - Fill in company details (autocomplete will suggest logos)
+   - Add position with smart autocomplete
+   - Add location with city autocomplete
+   - Select employment type (Full-time, Part-time, etc.)
+   - Add skills/technologies used
+   - Include job description and key achievements
 
-- **Track Your Growth**
-  - See visual duration badges for each role
-  - Monitor your career progression
-  - Export or screenshot your professional timeline
+2. **Manage Your Timeline**
+   - View your total experience (years, months, days)
+   - Edit or remove existing experiences
+   - Mark current positions
+   - Track companies worked at
+
+### **Build Your Resume** ⭐
+
+1. **Add Profile Information**
+   - Click "Experiences" in navigation
+   - Navigate to "Resume" tab
+   - Click "Add Profile Info"
+   - Fill in your contact details and professional summary
+
+2. **Choose a Template**
+   - Select from Classic, Modern, or Minimal templates
+   - See live preview of your resume
+   - Switch templates anytime
+
+3. **Export Your Resume**
+   - **Download PDF** - High-quality PDF with custom filename
+   - **Print** - Optimized for professional printing
+   - Files named as: `Resume_YourName_2026-01-20.pdf`
+
+4. **What's Included**
+   - Professional summary
+   - Technical skills (aggregated from all roles)
+   - Work experience with achievements
+   - Skills used in each role
+   - Education (coming soon)
+   - Certifications (coming soon)
 
 ## 📁 Project Structure
 
 ```
-work-experience-tracker/
+work-exp-app/
 ├── public/
-│   ├── index.html               # Main HTML template
-│   └── favicon.ico              # Application favicon
+│   ├── index.html
+│   └── favicon.ico
 ├── src/
 │   ├── components/
 │   │   ├── cards/
-│   │   │   ├── ExperienceCard.js    # Individual experience display
-│   │   │   └── SummaryCard.js       # Total experience summary
+│   │   │   ├── ExperienceCard.js       # Experience display with skills
+│   │   │   └── SummaryCard.js          # Total experience summary
 │   │   ├── common/
-│   │   │   ├── Button.js            # Reusable button component
-│   │   │   └── Input.js             # Enhanced input with icons
+│   │   │   ├── Button.js               # Reusable button component
+│   │   │   └── Input.js                # Enhanced input with icons
 │   │   ├── forms/
-│   │   │   └── ExperienceForm.js    # Experience input form with autocomplete
-│   │   └── layout/
-│   │       ├── EmptyState.js        # Empty state component
-│   │       └── Header.js            # Application header
+│   │   │   ├── ExperienceForm.js       # Experience form with skills
+│   │   │   └── ProfileForm.js          # Profile information form
+│   │   ├── layout/
+│   │   │   ├── EmptyState.js
+│   │   │   └── Header.js               # App header with navigation
+│   │   └── resume/
+│   │       ├── ResumePreview.js        # Original resume component
+│   │       └── templates/              # ⭐ NEW Resume templates
+│   │           ├── ClassicTemplate.js  # Traditional design
+│   │           ├── ModernTemplate.js   # Contemporary design
+│   │           └── MinimalTemplate.js  # Clean & simple design
 │   ├── config/
-│   │   ├── jobTitles.json           # Job titles configuration (300+ positions)
-│   │   └── cities.json              # Cities configuration (300+ major cities)
+│   │   ├── jobTitles.json              # 300+ job positions
+│   │   └── cities.json                 # 300+ major cities
 │   ├── hooks/
-│   │   └── useExperience.js         # Custom hook for state management
+│   │   ├── useExperience.js            # Experience state management
+│   │   ├── useProfile.js               # Profile state management
+│   │   └── useTheme.js                 # Dark mode management
+│   ├── pages/
+│   │   ├── Dashboard.js                # Main experiences page
+│   │   └── Resume.js                   # ⭐ Resume builder page
 │   ├── utils/
-│   │   └── dateUtils.js             # Date calculation utilities
-│   ├── App.js                       # Main application component
-│   ├── index.css                    # Global styles and animations
-│   └── index.js                     # Application entry point
-├── .gitignore                      # Git ignore rules
-├── package.json                     # Dependencies and scripts
-├── postcss.config.js                # PostCSS configuration
-├── tailwind.config.js               # Tailwind CSS configuration
-└── README.md                        # Project documentation
+│   │   └── dateUtils.js                # Date calculations
+│   ├── App.js                          # Main app with routing
+│   ├── index.css                       # ⭐ Global styles + print styles
+│   └── index.js                        # Entry point
+├── package.json                        # ⭐ Updated with PDF dependencies
+└── README.md
 ```
 
-## 🔧 Configuration
+## 🔧 Technology Stack
 
-### **API Keys Setup**
+### Core
+- **React 19.1.0** - Latest React with modern hooks
+- **React Router** - Client-side routing
+- **Tailwind CSS** - Utility-first CSS framework
+- **Lucide React** - Beautiful icon library
 
-The app uses two external APIs for enhanced functionality:
+### Resume Builder ⭐
+- **react-to-print** - Print functionality
+- **html2canvas** - HTML to canvas conversion
+- **jsPDF** - PDF generation
 
-#### **JSearch API (Job Titles Autocomplete)**
-- **Purpose:** Provides comprehensive job titles and position suggestions
-- **Setup:** 
-  1. Get API key from [RapidAPI JSearch](https://rapidapi.com/letscrape-6bRBa3QguO5/api/jsearch)
-  2. Create `.env.local` file: `REACT_APP_JSEARCH_API_KEY=your_api_key_here`
-- **Fallback:** App works perfectly without API using 60+ local job titles
-- **Usage:** Hybrid approach - fast local search + smart API fallback
+### APIs & Data
+- **Clearbit API** - Company logos and data
+- **JSearch API** - Job title autocomplete (optional)
+- **GeoDB Cities API** - Location autocomplete (optional)
 
-#### **Clearbit API (Company Data)**
-- **Purpose:** Company logos and information
-- **Setup:** No API key required (free tier)
-- **Usage:** Automatic company logo fetching
+### Storage
+- **LocalStorage** - Client-side data persistence
 
-#### **GeoDB Cities API (Location Autocomplete)**
-- **Purpose:** Provides city data for location autocomplete
-- **Setup:** No API key required (free tier)
-- **Fallback:** App works perfectly without API using 300+ local cities
-- **Usage:** Hybrid approach - fast local search + smart API fallback
+## 🎨 Resume Template Details
 
-### **Styling Configuration**
-- **Tailwind CSS**
-  - The project uses Tailwind CSS for styling. Configuration is in `tailwind.config.js`:
-    - Content paths for purging unused styles
-    - Custom theme extensions
-    - Plugin configurations
-- **PostCSS**
-  - PostCSS configuration in `postcss.config.js` includes:
-    - Tailwind CSS processing
-    - Autoprefixer for browser compatibility
+### Classic Template
+- **Style:** Traditional, professional
+- **Font:** Georgia (serif)
+- **Colors:** Black, white, gray
+- **Best for:** Corporate, finance, legal, traditional industries
+- **Features:** Timeline, clear sections, conservative design
 
-## 🎨 Design Features
+### Modern Template  
+- **Style:** Contemporary, eye-catching
+- **Font:** System UI (sans-serif)
+- **Colors:** Blue gradients, color accents
+- **Best for:** Tech, startups, creative roles
+- **Features:** Colored header, skill badges, modern spacing
 
-- **Animations**
-  - Fade-in animations for initial page load
-  - Slide-up animations for cards and forms
-  - Hover effects on interactive elements
-  - Smooth transitions between states
-- **Color Scheme**
-  - Primary: Indigo to purple gradients
-  - Secondary: Professional grays and whites
-  - Accents: Green for success, red for actions
-  - Backgrounds: Subtle gradients from indigo to purple
-- **Typography**
-  - Headings: Bold, gradient text for emphasis
-  - Body: Clean, readable sans-serif
-  - Labels: Medium weight for form clarity
+### Minimal Template
+- **Style:** Clean, simple, scannable
+- **Font:** Helvetica Neue (sans-serif)
+- **Colors:** Grayscale only
+- **Best for:** ATS systems, tech roles, minimalists
+- **Features:** Maximum whitespace, light typography, text-based
+
+## 📊 Data Flow
+
+### Experience Data
+```javascript
+{
+  id: "timestamp",
+  company: "Company Name",
+  companyDomain: "company.com",
+  companyLogo: "https://logo.clearbit.com/company.com",
+  position: "Software Engineer",
+  location: "San Francisco, CA",
+  category: "Full-time",
+  startDate: "2021-06-01",
+  endDate: "2024-01-15",
+  current: false,
+  description: "Job description...",
+  skills: ["React", "Node.js", "AWS"],
+  achievements: [
+    "Led team of 5 developers",
+    "Increased performance by 40%"
+  ]
+}
+```
+
+### Profile Data
+```javascript
+{
+  fullName: "John Doe",
+  headline: "Senior Software Engineer",
+  email: "john@example.com",
+  phone: "+1 234 567 8900",
+  location: "San Francisco, CA",
+  linkedin: "linkedin.com/in/johndoe",
+  website: "johndoe.com",
+  summary: "Experienced software engineer..."
+}
+```
+
+## 🎯 Roadmap
+
+### Phase 1: Foundation ✅ (Complete)
+- [x] Experience tracking
+- [x] Skills management
+- [x] Data persistence
+- [x] Import/Export
+
+### Phase 2: Resume Builder ✅ (Complete)
+- [x] Multiple templates (3)
+- [x] PDF export
+- [x] Print support
+- [x] Template selector
+
+### Phase 3: Coming Soon 🚧
+- [ ] Education section
+- [ ] Certifications section
+- [ ] Custom template colors
+- [ ] More template options (Technical, Executive)
+- [ ] Resume scoring
+
+### Phase 4: AI Features 🎯
+- [ ] Job description analyzer
+- [ ] Resume vs JD matching
+- [ ] AI resume suggestions
+- [ ] Keyword optimization
+- [ ] ATS compatibility checker
 
 ## 🔒 Privacy & Data
 
-- **Local storage:** All data is stored in browser memory during the session
-- **No external storage:** No data is sent to external servers (except APIs)
-- **API usage:** 
-  - Clearbit API: Company logo fetching
-  - JSearch API: Job titles autocomplete (optional, falls back to local data)
-  - GeoDB Cities API: Location autocomplete (optional, falls back to local data)
-- **Hybrid approach:** Fast local search + smart API fallback for comprehensive results
+- **Local Storage:** All data stored in browser localStorage
+- **No Server:** No data sent to external servers (except API calls)
+- **API Usage:**
+  - Clearbit: Company logos (no personal data)
+  - JSearch: Job titles (query only, optional)
+  - GeoDB: Cities (query only, optional)
+- **Export/Import:** Full control over your data
 
-## 🛠️ Development
-
-### Available Scripts
-
-- `npm start` – Start development server
-- `npm run build` – Build for production
-- `npm test` – Run test suite
-- `npm run eject` – Eject from Create React App
-
-### Project Cleanup
-
-The project has been cleaned up to remove unnecessary files:
-- Removed empty `App.css` file
-- Removed unused `reportWebVitals.js`
-- Removed `.DS_Store` files
-- Removed `.vite` directory (not needed for Create React App)
-- Organized job titles and cities in external JSON configuration
-
-### Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🤝 Acknowledgments
-
-- Clearbit for company data and logos
-- JSearch API for comprehensive job titles data
-- GeoDB Cities API for location autocomplete
-- Lucide for beautiful icons
-- Tailwind CSS for the styling framework
-- React team for the amazing framework
-
-## 📧 Contact
-
-- Aniket Anil Kumar - [GitHub Profile](https://github.com/gitforaniket)
-- Project Link: [https://github.com/gitforaniket/work-exp-app](https://github.com/gitforaniket/work-exp-app)
-
----
-
-Built with ❤️ using React and modern web technologies
-
-## 🧪 Running & Writing Tests
-
-This project uses **Jest** and **React Testing Library** for unit testing.
-
-### Test Directory Structure
-
-All test files are placed in a single `src/__tests__` directory. For example:
-
-```
-src/__tests__/Button.test.js
-src/__tests__/Input.test.js
-src/__tests__/Header.test.js
-src/__tests__/ExperienceCard.test.js
-src/__tests__/SummaryCard.test.js
-src/__tests__/EmptyState.test.js
-src/__tests__/ExperienceForm.test.js
-```
+## 🧪 Testing
 
 ### Running Tests
-
-To run all tests:
 
 ```bash
 npm test
 ```
 
-or
-
-```bash
-yarn test
-```
-
-This will run all test files matching `*.test.js` in the project.
-
-### Writing Tests
-- Use [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) for rendering and interacting with components.
-- Use [Jest](https://jestjs.io/docs/getting-started) for assertions and mocking.
-- Place new test files in the `src/__tests__` directory.
-
 ### Test Coverage
-
-To generate a test coverage report, run:
 
 ```bash
 npm test -- --coverage
 ```
 
-This will output a summary in the terminal and generate a detailed HTML report in the `coverage/` directory. Open `coverage/lcov-report/index.html` in your browser to view the full coverage report.
+Tests are located in `src/__tests__/` directory.
 
-## 🚀 Deployment to GitHub Pages
+## 🚀 Deployment
 
-This app can be deployed to GitHub Pages using the following commands:
+### GitHub Pages
 
 ```bash
 npm run deploy
 ```
 
-This will build the app and publish it to the `gh-pages` branch. Your app will be live at:
+Your app will be live at: `https://aniket-r2dev2.github.io/work-exp-app/`
 
-https://gitforaniket.github.io/work-exp-app/
+### CI/CD
 
-If you make changes, just run `npm run deploy` again to update the live site.
+GitHub Actions automatically:
+1. Runs tests on every push
+2. Builds the project
+3. Deploys to GitHub Pages
 
-## ⚙️ CI/CD with GitHub Actions
+Workflow: `.github/workflows/deploy.yml`
 
-This project uses GitHub Actions to automatically build, test, and deploy the app to GitHub Pages on every push to the `main` branch.
+## 📝 Contributing
 
-- The workflow is defined in `.github/workflows/deploy.yml`.
-- It will:
-  1. Check out the code
-  2. Set up Node.js
-  3. Install dependencies
-  4. Run all tests (with coverage)
-  5. Build the project
-  6. Deploy the build to the `gh-pages` branch (GitHub Pages)
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-You can view workflow runs and logs in the **Actions** tab of your GitHub repository.
+## 📄 License
+
+MIT License - see LICENSE file for details
+
+## 🤝 Acknowledgments
+
+- Clearbit for company data and logos
+- JSearch API for job titles
+- GeoDB Cities for location data
+- Lucide for beautiful icons
+- Tailwind CSS for styling framework
+- React team for the amazing framework
+- Open source community
+
+## 📧 Contact
+
+- **Developer:** Aniket Anil Kumar
+- **GitHub:** [@aniket-r2Dev2](https://github.com/aniket-r2Dev2)
+- **Project:** [work-exp-app](https://github.com/aniket-r2Dev2/work-exp-app)
+- **Live Demo:** [https://aniket-r2dev2.github.io/work-exp-app/](https://aniket-r2dev2.github.io/work-exp-app/)
+
+---
+
+**Built with ❤️ using React and modern web technologies**
+
+⭐ Star this repo if you find it helpful!
