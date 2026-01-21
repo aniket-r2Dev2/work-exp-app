@@ -1,5 +1,5 @@
 import React from 'react';
-import { Building2, MapPin, Calendar, Award, Trash2, Code2 } from 'lucide-react';
+import { Building2, MapPin, Calendar, Award, Trash2, Code2, Pencil } from 'lucide-react';
 import { calculateDuration, formatDate } from '../../utils/dateUtils';
 
 // Common company domain mappings for better logo fetching
@@ -108,7 +108,7 @@ const guessDomain = (companyName) => {
   return null;
 };
 
-const ExperienceCard = ({ experience, onRemove, index }) => {
+const ExperienceCard = ({ experience, onRemove, onEdit, index }) => {
   // Ensure logo URL uses HTTPS and handle Clearbit logo
   const getLogoUrl = () => {
     // 1. Try provided logo URL first
@@ -137,13 +137,23 @@ const ExperienceCard = ({ experience, onRemove, index }) => {
       className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 border border-gray-100 dark:border-gray-700 hover:shadow-2xl transition-all duration-300 animate-slide-up relative"
       style={{ animationDelay: `${index * 0.1}s` }}
     >
-      <button
-        onClick={() => onRemove(experience.id)}
-        className="absolute top-4 right-4 p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors duration-200"
-        aria-label="Remove experience"
-      >
-        <Trash2 className="w-5 h-5" />
-      </button>
+      {/* Action Buttons - Edit and Delete */}
+      <div className="absolute top-4 right-4 flex items-center gap-2">
+        <button
+          onClick={() => onEdit(experience)}
+          className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors duration-200"
+          aria-label="Edit experience"
+        >
+          <Pencil className="w-5 h-5" />
+        </button>
+        <button
+          onClick={() => onRemove(experience.id)}
+          className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors duration-200"
+          aria-label="Remove experience"
+        >
+          <Trash2 className="w-5 h-5" />
+        </button>
+      </div>
 
       <div className="grid grid-cols-12 gap-6 items-start">
         <div className="col-span-12 md:col-span-10">

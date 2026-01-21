@@ -18,21 +18,40 @@ describe('ExperienceCard', () => {
   };
 
   it('renders company and position', () => {
-    render(<ExperienceCard experience={experience} onRemove={() => {}} index={0} />);
+    render(<ExperienceCard experience={experience} onRemove={() => {}} onEdit={() => {}} index={0} />);
     expect(screen.getByText('TestCorp')).toBeInTheDocument();
     expect(screen.getByText('Developer')).toBeInTheDocument();
   });
 
   it('renders achievements', () => {
-    render(<ExperienceCard experience={experience} onRemove={() => {}} index={0} />);
+    render(<ExperienceCard experience={experience} onRemove={() => {}} onEdit={() => {}} index={0} />);
     expect(screen.getByText('Achievement 1')).toBeInTheDocument();
     expect(screen.getByText('Achievement 2')).toBeInTheDocument();
   });
 
   it('calls onRemove when remove button is clicked', () => {
     const onRemove = jest.fn();
-    render(<ExperienceCard experience={experience} onRemove={onRemove} index={0} />);
-    fireEvent.click(screen.getByRole('button'));
+    const onEdit = jest.fn();
+    render(<ExperienceCard experience={experience} onRemove={onRemove} onEdit={onEdit} index={0} />);
+    
+    // Target the remove button specifically by aria-label
+    const removeButton = screen.getByRole('button', { name: /remove experience/i });
+    fireEvent.click(removeButton);
+    
     expect(onRemove).toHaveBeenCalledWith('1');
+    expect(onEdit).not.toHaveBeenCalled();
+  });
+
+  it('calls onEdit when edit button is clicked', () => {
+    const onRemove = jest.fn();
+    const onEdit = jest.fn();
+    render(<ExperienceCard experience={experience} onRemove={onRemove} onEdit={onEdit} index={0} />);
+    
+    // Target the edit button specifically by aria-label
+    const editButton = screen.getByRole('button', { name: /edit experience/i });
+    fireEvent.click(editButton);
+    
+    expect(onEdit).toHaveBeenCalledWith(experience);
+    expect(onRemove).not.toHaveBeenCalled();
   });
 }); 

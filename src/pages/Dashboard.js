@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useExperience from '../hooks/useExperience';
 import Header from '../components/layout/Header';
@@ -16,12 +16,38 @@ const Dashboard = () => {
     experiences, 
     showForm, 
     addExperience, 
-    removeExperience, 
+    removeExperience,
+    updateExperience, 
     toggleForm,
     exportData,
     importData,
     clearAllData
   } = useExperience();
+
+  const [editingExperience, setEditingExperience] = useState(null);
+
+  const handleEdit = (experience) => {
+    setEditingExperience(experience);
+    if (!showForm) {
+      toggleForm();
+    }
+  };
+
+  const handleSubmit = (experienceData) => {
+    if (editingExperience) {
+      // Update existing experience
+      updateExperience(editingExperience.id, experienceData);
+      setEditingExperience(null);
+    } else {
+      // Add new experience
+      addExperience(experienceData);
+    }
+  };
+
+  const handleCancel = () => {
+    setEditingExperience(null);
+    toggleForm();
+  };
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -50,9 +76,11 @@ const Dashboard = () => {
 
       {showForm && (
         <ExperienceForm
-          onSubmit={addExperience}
-          onCancel={toggleForm}
-          showCancel={experiences.length > 0}
+          onSubmit={handleSubmit}
+          onCancel={handleCancel}
+          showCancel={experiences.length > 0 || editingExperience !== null}
+          initialData={editingExperience}
+          isEditing={editingExperience !== null}
         />
       )}
 
@@ -73,6 +101,7 @@ const Dashboard = () => {
               key={exp.id}
               experience={exp}
               onRemove={removeExperience}
+              onEdit={handleEdit}
               index={index}
             />
           ))}

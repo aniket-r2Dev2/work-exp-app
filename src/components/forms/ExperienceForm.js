@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Building2, MapPin, Calendar, Award, Trash2, Code2, X } from 'lucide-react';
+import { Plus, Building2, MapPin, Calendar, Award, Trash2, Code2, X, Pencil } from 'lucide-react';
 import Input from '../common/Input';
 import Button from '../common/Button';
 import jobTitlesConfig from '../../config/jobTitles.json';
@@ -40,7 +40,7 @@ const commonSkills = [
   'TensorFlow', 'PyTorch', 'Machine Learning', 'Data Analysis', 'SQL'
 ];
 
-const ExperienceForm = ({ onSubmit, onCancel, showCancel }) => {
+const ExperienceForm = ({ onSubmit, onCancel, showCancel, initialData = null, isEditing = false }) => {
   const [formData, setFormData] = useState({
     company: '',
     companyDomain: '',
@@ -53,8 +53,25 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel }) => {
     current: false,
     description: '',
     achievements: [''],
-    skills: [] // New field for skills
+    skills: []
   });
+
+  // Initialize form with data when editing
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        ...initialData,
+        achievements: initialData.achievements && initialData.achievements.length > 0 
+          ? initialData.achievements 
+          : [''],
+        skills: initialData.skills || []
+      });
+      setCompanyQuery(initialData.company || '');
+      setPositionQuery(initialData.position || '');
+      setLocationQuery(initialData.location || '');
+    }
+  }, [initialData]);
+
   const [companyQuery, setCompanyQuery] = useState('');
   const [companySuggestions, setCompanySuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -425,41 +442,45 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel }) => {
       return;
     }
 
-    onSubmit({
-      ...formData,
-      id: Date.now().toString()
-    });
+    onSubmit(formData);
 
-    // Reset form
-    setFormData({
-      company: '',
-      companyDomain: '',
-      companyLogo: '',
-      position: '',
-      category: 'Full-time',
-      location: '',
-      startDate: '',
-      endDate: '',
-      current: false,
-      description: '',
-      achievements: [''],
-      skills: []
-    });
-    setCompanyQuery('');
-    setPositionQuery('');
-    setLocationQuery('');
-    setSkillInput('');
-    setCompanySelectedIndex(-1);
-    setPositionSelectedIndex(-1);
-    setLocationSelectedIndex(-1);
-    setSkillSelectedIndex(-1);
+    // Reset form only if not editing
+    if (!isEditing) {
+      setFormData({
+        company: '',
+        companyDomain: '',
+        companyLogo: '',
+        position: '',
+        category: 'Full-time',
+        location: '',
+        startDate: '',
+        endDate: '',
+        current: false,
+        description: '',
+        achievements: [''],
+        skills: []
+      });
+      setCompanyQuery('');
+      setPositionQuery('');
+      setLocationQuery('');
+      setSkillInput('');
+    }
   };
 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-8 mb-8 border border-gray-100 dark:border-gray-700 animate-slide-up">
       <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6 flex items-center">
-        <Plus className="w-6 h-6 mr-2 text-linkedin-600" />
-        Add Work Experience
+        {isEditing ? (
+          <>
+            <Pencil className="w-6 h-6 mr-2 text-blue-600" />
+            Edit Work Experience
+          </>
+        ) : (
+          <>
+            <Plus className="w-6 h-6 mr-2 text-linkedin-600" />
+            Add Work Experience
+          </>
+        )}
       </h2>
       
       <div className="space-y-6">
@@ -492,9 +513,7 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel }) => {
                     onMouseDown={() => handleCompanySelect(c)}
                     onMouseEnter={() => setCompanySelectedIndex(index)}
                   >
-                      {/* logo container to ensure visibility on light and dark backgrounds */}
                       {(() => {
-                        // prefer provided logo, otherwise fall back to Clearbit logo endpoint using domain
                         const fallbackLogo = c.domain ? `https://logo.clearbit.com/${c.domain}` : null;
                         const src = c.logo || fallbackLogo;
                         if (src) {
@@ -511,7 +530,6 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel }) => {
                                     const tried = target.dataset.triedFallback;
                                     const domain = target.dataset.domain;
                                     if (!tried && domain) {
-                                      // try Clearbit logo as fallback
                                       target.dataset.triedFallback = '1';
                                       target.src = `https://logo.clearbit.com/${domain}`;
                                       return;
@@ -519,7 +537,6 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel }) => {
                                   } catch (err) {
                                     // ignore
                                   }
-                                  // hide if all attempts failed
                                   e.target.style.display = 'none';
                                 }}
                               />
@@ -774,7 +791,7 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel }) => {
 
         <div className="flex space-x-4 pt-4">
           <Button onClick={handleSubmit} className="flex-1">
-            Add Experience
+            {isEditing ? 'Update Experience' : 'Add Experience'}
           </Button>
           {showCancel && (
             <Button onClick={onCancel} variant="secondary">

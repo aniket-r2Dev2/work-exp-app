@@ -76,6 +76,21 @@ const useExperience = () => {
     setShowForm(false);
   };
 
+  const updateExperience = (id, experienceData) => {
+    setExperiences(prev => 
+      prev.map(exp => 
+        exp.id === id 
+          ? {
+              ...experienceData,
+              id: exp.id, // Preserve the original ID
+              achievements: experienceData.achievements.filter(achievement => achievement.trim() !== '')
+            }
+          : exp
+      )
+    );
+    setShowForm(false);
+  };
+
   const removeExperience = (id) => {
     setExperiences(prev => prev.filter(exp => exp.id !== id));
   };
@@ -190,6 +205,7 @@ const useExperience = () => {
     experiences,
     showForm,
     addExperience,
+    updateExperience,
     removeExperience,
     toggleForm,
     exportData,
