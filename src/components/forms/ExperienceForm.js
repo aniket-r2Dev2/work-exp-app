@@ -3,7 +3,6 @@ import { Plus, Building2, MapPin, Calendar, Award, Trash2, Code2, X, Pencil } fr
 import Input from '../common/Input';
 import Button from '../common/Button';
 import jobTitlesConfig from '../../config/jobTitles.json';
-import citiesConfig from '../../config/cities.json';
 
 // Extract all job titles from the config
 const allJobTitles = jobTitlesConfig.jobTitles.flatMap(category => category.titles);
@@ -14,18 +13,6 @@ const filterJobTitles = (query) => {
   const lowercaseQuery = query.toLowerCase();
   return allJobTitles
     .filter(title => title.toLowerCase().includes(lowercaseQuery))
-    .slice(0, 10);
-};
-
-// Extract all cities from the config
-const allCities = citiesConfig.cities;
-
-// Function to filter cities based on search query
-const filterCities = (query) => {
-  if (!query || query.length < 2) return [];
-  const lowercaseQuery = query.toLowerCase();
-  return allCities
-    .filter(city => city.toLowerCase().includes(lowercaseQuery))
     .slice(0, 10);
 };
 
@@ -179,33 +166,27 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel, initialData = null, is
   }, [positionQuery]);
 
   useEffect(() => {
-    if (locationQuery.length < 2) {
+    if (locationQuery.length < 3) {
       setLocationSuggestions([]);
       return;
     }
-    // Local suggestions first
-    const localSuggestions = filterCities(locationQuery);
-    setLocationSuggestions(localSuggestions);
-    // Fallback to GeoDB Cities API if local suggestions are few
-    if (localSuggestions.length < 5 && locationQuery.length >= 3) {
-      const controller = new AbortController();
-      fetch(`https://geodb-free-service.wirefreethought.com/v1/geo/cities?limit=10&offset=0&namePrefix=${encodeURIComponent(locationQuery)}`, {
-        signal: controller.signal
+    // Use GeoDB Cities API for location suggestions
+    const controller = new AbortController();
+    fetch(`https://geodb-free-service.wirefreethought.com/v1/geo/cities?limit=10&offset=0&namePrefix=${encodeURIComponent(locationQuery)}`, {
+      signal: controller.signal
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.data && Array.isArray(data.data)) {
+          const cities = data.data.map(city => `${city.city}, ${city.country}`);
+          setLocationSuggestions(cities);
+        }
       })
-        .then(res => res.json())
-        .then(data => {
-          if (data.data && Array.isArray(data.data)) {
-            const apiCities = [...new Set(data.data.map(city => `${city.city}, ${city.country}`))];
-            const all = [...new Set([...localSuggestions, ...apiCities])];
-            setLocationSuggestions(all.slice(0, 15));
-          }
-        })
-        .catch(() => {
-          // If API fails, keep local suggestions
-          console.log('GeoDB API search failed, using local suggestions only');
-        });
-      return () => controller.abort();
-    }
+      .catch(() => {
+        console.log('GeoDB API search failed');
+        setLocationSuggestions([]);
+      });
+    return () => controller.abort();
   }, [locationQuery]);
 
   // Keyboard navigation handlers
