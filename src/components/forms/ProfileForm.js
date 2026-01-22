@@ -1,14 +1,112 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Mail, Phone, MapPin, Linkedin, Globe, FileText } from 'lucide-react';
 import Input from '../common/Input';
 import Button from '../common/Button';
+import citiesConfig from '../../config/cities.json';
+
+// Extract all cities from the config
+const allCities = citiesConfig.cities;
+
+// Function to filter cities based on search query
+const filterCities = (query) => {
+  if (!query || query.length < 2) return [];
+  const lowercaseQuery = query.toLowerCase();
+  return allCities
+    .filter(city => city.toLowerCase().includes(lowercaseQuery))
+    .slice(0, 10);
+};
 
 const ProfileForm = ({ profile, onUpdate, onCancel }) => {
   const [formData, setFormData] = useState(profile);
+  const [locationQuery, setLocationQuery] = useState(profile.location || '');
+  const [locationSuggestions, setLocationSuggestions] = useState([]);
+  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
+  const [locationSelectedIndex, setLocationSelectedIndex] = useState(-1);
+
+  // Reset selected index when suggestions change
+  useEffect(() => {
+    setLocationSelectedIndex(-1);
+  }, [locationSuggestions]);
+
+  // Fetch location suggestions
+  useEffect(() => {
+    if (locationQuery.length < 2) {
+      setLocationSuggestions([]);
+      return;
+    }
+    // Local suggestions first
+    const localSuggestions = filterCities(locationQuery);
+    setLocationSuggestions(localSuggestions);
+    // Fallback to GeoDB Cities API if local suggestions are few
+    if (localSuggestions.length < 5 && locationQuery.length >= 3) {
+      const controller = new AbortController();
+      fetch(`https://geodb-free-service.wirefreethought.com/v1/geo/cities?limit=10&offset=0&namePrefix=${encodeURIComponent(locationQuery)}`, {
+        signal: controller.signal
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.data && Array.isArray(data.data)) {
+            const apiCities = [...new Set(data.data.map(city => `${city.city}, ${city.country}`))];
+            const all = [...new Set([...localSuggestions, ...apiCities])];
+            setLocationSuggestions(all.slice(0, 15));
+          }
+        })
+        .catch(() => {
+          // If API fails, keep local suggestions
+          console.log('GeoDB API search failed, using local suggestions only');
+        });
+      return () => controller.abort();
+    }
+  }, [locationQuery]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleLocationInput = (e) => {
+    const value = e.target.value;
+    setLocationQuery(value);
+    setFormData(prev => ({ ...prev, location: value }));
+    setShowLocationSuggestions(true);
+  };
+
+  const handleLocationSelect = (city) => {
+    setFormData(prev => ({ ...prev, location: city }));
+    setLocationQuery(city);
+    setShowLocationSuggestions(false);
+    setLocationSelectedIndex(-1);
+  };
+
+  const handleLocationKeyDown = (e) => {
+    if (!showLocationSuggestions || locationSuggestions.length === 0) return;
+    
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setLocationSelectedIndex(prev => 
+          prev < locationSuggestions.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setLocationSelectedIndex(prev => 
+          prev > 0 ? prev - 1 : locationSuggestions.length - 1
+        );
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (locationSelectedIndex >= 0) {
+          handleLocationSelect(locationSuggestions[locationSelectedIndex]);
+        }
+        break;
+      case 'Escape':
+        setShowLocationSuggestions(false);
+        setLocationSelectedIndex(-1);
+        break;
+      default:
+        break;
+    }
   };
 
   const handleSubmit = () => {
@@ -66,14 +164,38 @@ const ProfileForm = ({ profile, onUpdate, onCancel }) => {
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          <Input
-            label="Location"
-            name="location"
-            value={formData.location}
-            onChange={handleChange}
-            placeholder="San Francisco, CA"
-            icon={MapPin}
-          />
+          <div className="relative">
+            <Input
+              label="Location"
+              name="location"
+              value={locationQuery}
+              onChange={handleLocationInput}
+              onKeyDown={handleLocationKeyDown}
+              placeholder="San Francisco, CA"
+              icon={MapPin}
+              autoComplete="off"
+              onFocus={() => setShowLocationSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowLocationSuggestions(false), 200)}
+            />
+            {showLocationSuggestions && locationSuggestions.length > 0 && (
+              <ul className="absolute z-10 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 w-full mt-1 rounded shadow-lg max-h-48 overflow-y-auto top-full left-0">
+                {locationSuggestions.map((city, index) => (
+                  <li
+                    key={index}
+                    className={`flex items-center px-4 py-2 cursor-pointer text-gray-800 dark:text-gray-100 ${
+                      index === locationSelectedIndex 
+                        ? 'bg-linkedin-100 text-linkedin-800 dark:bg-linkedin-800 dark:text-linkedin-100' 
+                        : 'hover:bg-linkedin-50 dark:hover:bg-slate-700'
+                    }`}
+                    onMouseDown={() => handleLocationSelect(city)}
+                    onMouseEnter={() => setLocationSelectedIndex(index)}
+                  >
+                    <span>{city}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
           <Input
             label="LinkedIn URL"
             name="linkedin"
