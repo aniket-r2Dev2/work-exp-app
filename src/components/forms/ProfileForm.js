@@ -2,19 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { User, Mail, Phone, MapPin, Linkedin, Globe, FileText } from 'lucide-react';
 import Input from '../common/Input';
 import Button from '../common/Button';
-import citiesConfig from '../../config/cities.json';
-
-// Extract all cities from the config
-const allCities = citiesConfig.cities;
-
-// Function to filter cities based on search query
-const filterCities = (query) => {
-  if (!query || query.length < 2) return [];
-  const lowercaseQuery = query.toLowerCase();
-  return allCities
-    .filter(city => city.toLowerCase().includes(lowercaseQuery))
-    .slice(0, 10);
-};
 
 const ProfileForm = ({ profile, onUpdate, onCancel }) => {
   const [formData, setFormData] = useState(profile);
@@ -28,35 +15,28 @@ const ProfileForm = ({ profile, onUpdate, onCancel }) => {
     setLocationSelectedIndex(-1);
   }, [locationSuggestions]);
 
-  // Fetch location suggestions
+  // Fetch location suggestions from GeoDB API
   useEffect(() => {
-    if (locationQuery.length < 2) {
+    if (locationQuery.length < 3) {
       setLocationSuggestions([]);
       return;
     }
-    // Local suggestions first
-    const localSuggestions = filterCities(locationQuery);
-    setLocationSuggestions(localSuggestions);
-    // Fallback to GeoDB Cities API if local suggestions are few
-    if (localSuggestions.length < 5 && locationQuery.length >= 3) {
-      const controller = new AbortController();
-      fetch(`https://geodb-free-service.wirefreethought.com/v1/geo/cities?limit=10&offset=0&namePrefix=${encodeURIComponent(locationQuery)}`, {
-        signal: controller.signal
+    const controller = new AbortController();
+    fetch(`https://geodb-free-service.wirefreethought.com/v1/geo/cities?limit=10&offset=0&namePrefix=${encodeURIComponent(locationQuery)}`, {
+      signal: controller.signal
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.data && Array.isArray(data.data)) {
+          const cities = data.data.map(city => `${city.city}, ${city.country}`);
+          setLocationSuggestions(cities);
+        }
       })
-        .then(res => res.json())
-        .then(data => {
-          if (data.data && Array.isArray(data.data)) {
-            const apiCities = [...new Set(data.data.map(city => `${city.city}, ${city.country}`))];
-            const all = [...new Set([...localSuggestions, ...apiCities])];
-            setLocationSuggestions(all.slice(0, 15));
-          }
-        })
-        .catch(() => {
-          // If API fails, keep local suggestions
-          console.log('GeoDB API search failed, using local suggestions only');
-        });
-      return () => controller.abort();
-    }
+      .catch(() => {
+        console.log('GeoDB API search failed');
+        setLocationSuggestions([]);
+      });
+    return () => controller.abort();
   }, [locationQuery]);
 
   const handleChange = (e) => {
