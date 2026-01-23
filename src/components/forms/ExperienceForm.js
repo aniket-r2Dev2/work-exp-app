@@ -2,19 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Building2, MapPin, Calendar, Award, Trash2, Code2, X, Pencil } from 'lucide-react';
 import Input from '../common/Input';
 import Button from '../common/Button';
-import jobTitlesConfig from '../../config/jobTitles.json';
-
-// Extract all job titles from the config
-const allJobTitles = jobTitlesConfig.jobTitles.flatMap(category => category.titles);
-
-// Function to filter job titles based on search query
-const filterJobTitles = (query) => {
-  if (!query || query.length < 2) return [];
-  const lowercaseQuery = query.toLowerCase();
-  return allJobTitles
-    .filter(title => title.toLowerCase().includes(lowercaseQuery))
-    .slice(0, 10);
-};
 
 // Common skills/technologies for suggestions
 const commonSkills = [
@@ -126,43 +113,38 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel, initialData = null, is
     return () => controller.abort();
   }, [companyQuery]);
 
+  // Job title autocomplete using Open Skills API
   useEffect(() => {
     if (positionQuery.length < 2) {
       setPositionSuggestions([]);
       return;
     }
     
-    // First, use fast local search for instant results
-    const localSuggestions = filterJobTitles(positionQuery);
-    setPositionSuggestions(localSuggestions);
-    
-    // Then, optionally fetch from API for more comprehensive results
-    // Only if we have less than 5 local suggestions and query is longer
-    if (localSuggestions.length < 5 && positionQuery.length >= 3) {
-      const controller = new AbortController();
-      fetch(`https://jsearch.p.rapidapi.com/search?query=${encodeURIComponent(positionQuery)}&num_pages=1`, {
-        headers: {
-          'X-RapidAPI-Host': 'jsearch.p.rapidapi.com',
-          'X-RapidAPI-Key': process.env.REACT_APP_JSEARCH_API_KEY
-        },
-        signal: controller.signal
+    const controller = new AbortController();
+    fetch(`http://api.dataatwork.org/v1/jobs/autocomplete?contains=${encodeURIComponent(positionQuery)}`, {
+      signal: controller.signal
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          // Extract job title suggestions and capitalize properly
+          const titles = data
+            .map(item => {
+              // Capitalize first letter of each word
+              return item.suggestion
+                .split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                .join(' ');
+            })
+            .slice(0, 15);
+          setPositionSuggestions(titles);
+        }
       })
-        .then(res => res.json())
-        .then(data => {
-          if (data.data && Array.isArray(data.data)) {
-            // Extract unique job titles from API results
-            const apiTitles = [...new Set(data.data.map(job => job.job_title).filter(Boolean))];
-            // Combine local and API results, removing duplicates
-            const allTitles = [...new Set([...localSuggestions, ...apiTitles])];
-            setPositionSuggestions(allTitles.slice(0, 15)); // Show more results when API is used
-          }
-        })
-        .catch(() => {
-          // If API fails, keep local suggestions
-          console.log('API search failed, using local suggestions only');
-        });
-      return () => controller.abort();
-    }
+      .catch(() => {
+        console.log('Open Skills API search failed');
+        setPositionSuggestions([]);
+      });
+    return () => controller.abort();
   }, [positionQuery]);
 
   useEffect(() => {
