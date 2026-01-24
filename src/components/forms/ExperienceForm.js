@@ -3,17 +3,6 @@ import { Plus, Building2, MapPin, Calendar, Award, Trash2, Code2, X, Pencil } fr
 import Input from '../common/Input';
 import Button from '../common/Button';
 
-// Common skills/technologies for suggestions
-const commonSkills = [
-  'JavaScript', 'TypeScript', 'Python', 'Java', 'C++', 'C#', 'Go', 'Rust', 'Swift', 'Kotlin',
-  'React', 'Angular', 'Vue.js', 'Node.js', 'Express', 'Django', 'Flask', 'Spring Boot',
-  'HTML', 'CSS', 'Tailwind CSS', 'Bootstrap', 'SASS', 'Material-UI',
-  'MongoDB', 'PostgreSQL', 'MySQL', 'Redis', 'Firebase', 'AWS', 'Azure', 'GCP',
-  'Docker', 'Kubernetes', 'Jenkins', 'Git', 'GitHub', 'GitLab', 'CI/CD',
-  'REST API', 'GraphQL', 'Microservices', 'Agile', 'Scrum', 'Jira',
-  'TensorFlow', 'PyTorch', 'Machine Learning', 'Data Analysis', 'SQL'
-];
-
 const ExperienceForm = ({ onSubmit, onCancel, showCancel, initialData = null, isEditing = false }) => {
   const [formData, setFormData] = useState({
     company: '',
@@ -84,20 +73,33 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel, initialData = null, is
     setSkillSelectedIndex(-1);
   }, [skillSuggestions]);
 
-  // Skills suggestions
+  // Skills autocomplete using Open Skills API
   useEffect(() => {
-    if (skillInput.length < 1) {
+    if (skillInput.length < 2) {
       setSkillSuggestions([]);
       return;
     }
-    const lowercaseQuery = skillInput.toLowerCase();
-    const filtered = commonSkills
-      .filter(skill => 
-        skill.toLowerCase().includes(lowercaseQuery) && 
-        !formData.skills.includes(skill)
-      )
-      .slice(0, 8);
-    setSkillSuggestions(filtered);
+    
+    const controller = new AbortController();
+    fetch(`http://api.dataatwork.org/v1/skills/autocomplete?contains=${encodeURIComponent(skillInput)}`, {
+      signal: controller.signal
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          // Extract skill suggestions and filter out already added skills
+          const skills = data
+            .map(item => item.suggestion)
+            .filter(skill => !formData.skills.includes(skill))
+            .slice(0, 10);
+          setSkillSuggestions(skills);
+        }
+      })
+      .catch(() => {
+        console.log('Open Skills API search failed');
+        setSkillSuggestions([]);
+      });
+    return () => controller.abort();
   }, [skillInput, formData.skills]);
 
   useEffect(() => {
@@ -675,7 +677,7 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel, initialData = null, is
               onFocus={() => setShowSkillSuggestions(true)}
               onBlur={() => setTimeout(() => setShowSkillSuggestions(false), 200)}
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-linkedin-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400"
-              placeholder="Type and press Enter to add skills (e.g., React, Python, AWS)"
+              placeholder="Type and press Enter to add skills (e.g., JavaScript, Leadership, Patient Care)"
             />
             {showSkillSuggestions && skillSuggestions.length > 0 && (
               <ul className="absolute z-10 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 w-full mt-1 rounded shadow-lg max-h-48 overflow-y-auto">
