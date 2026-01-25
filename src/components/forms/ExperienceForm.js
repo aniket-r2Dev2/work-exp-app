@@ -3,6 +3,46 @@ import { Plus, Building2, MapPin, Calendar, Award, Trash2, Code2, X, Pencil } fr
 import Input from '../common/Input';
 import Button from '../common/Button';
 
+// Comprehensive skills list covering multiple industries
+const commonSkills = [
+  // Programming Languages
+  'JavaScript', 'TypeScript', 'Python', 'Java', 'C++', 'C#', 'Go', 'Rust', 'Swift', 'Kotlin', 'PHP', 'Ruby', 'Scala', 'R', 'MATLAB',
+  // Frontend Technologies
+  'React', 'Angular', 'Vue.js', 'Next.js', 'Svelte', 'HTML', 'CSS', 'Tailwind CSS', 'Bootstrap', 'SASS', 'Material-UI', 'Redux', 'jQuery',
+  // Backend Technologies
+  'Node.js', 'Express', 'Django', 'Flask', 'FastAPI', 'Spring Boot', 'ASP.NET', 'Laravel', 'Ruby on Rails', 'GraphQL', 'REST API',
+  // Databases
+  'MongoDB', 'PostgreSQL', 'MySQL', 'Redis', 'Firebase', 'DynamoDB', 'Elasticsearch', 'Cassandra', 'Oracle', 'SQL Server',
+  // Cloud & DevOps
+  'AWS', 'Azure', 'GCP', 'Docker', 'Kubernetes', 'Jenkins', 'CI/CD', 'Terraform', 'Ansible', 'GitHub Actions', 'GitLab CI',
+  // Version Control
+  'Git', 'GitHub', 'GitLab', 'Bitbucket', 'SVN',
+  // Data Science & ML
+  'TensorFlow', 'PyTorch', 'Machine Learning', 'Deep Learning', 'Data Analysis', 'Pandas', 'NumPy', 'Scikit-learn', 'Keras', 'NLP',
+  // Mobile Development
+  'React Native', 'Flutter', 'iOS Development', 'Android Development', 'SwiftUI', 'Jetpack Compose',
+  // Testing
+  'Jest', 'Mocha', 'Cypress', 'Selenium', 'JUnit', 'PyTest', 'Unit Testing', 'Integration Testing', 'E2E Testing',
+  // Project Management
+  'Agile', 'Scrum', 'Kanban', 'Jira', 'Trello', 'Asana', 'Monday.com', 'Project Planning', 'Sprint Planning',
+  // Soft Skills
+  'Leadership', 'Communication', 'Team Management', 'Problem Solving', 'Critical Thinking', 'Negotiation', 'Public Speaking', 'Conflict Resolution',
+  'Time Management', 'Adaptability', 'Creativity', 'Collaboration', 'Decision Making', 'Emotional Intelligence',
+  // Business & Marketing
+  'SEO', 'Content Marketing', 'Social Media Marketing', 'Email Marketing', 'Google Analytics', 'PPC', 'Brand Management', 'Market Research',
+  'Sales', 'Business Development', 'Customer Service', 'CRM', 'Salesforce', 'HubSpot',
+  // Design
+  'UI/UX Design', 'Figma', 'Adobe Photoshop', 'Adobe Illustrator', 'Sketch', 'InVision', 'Wireframing', 'Prototyping', 'User Research',
+  // Finance & Accounting
+  'Financial Analysis', 'Accounting', 'Budgeting', 'Forecasting', 'Financial Modeling', 'Excel', 'QuickBooks', 'SAP', 'Risk Management',
+  'Investment Analysis', 'Tax Preparation', 'Auditing', 'Financial Reporting',
+  // Healthcare
+  'Patient Care', 'Clinical Research', 'Medical Coding', 'Healthcare Management', 'Nursing', 'EMR/EHR', 'HIPAA Compliance',
+  // Other Professional Skills
+  'Microsoft Office', 'Excel', 'PowerPoint', 'Word', 'Slack', 'Zoom', 'Microsoft Teams', 'Documentation', 'Technical Writing',
+  'Presentation Skills', 'Research', 'Data Entry', 'Quality Assurance', 'Troubleshooting'
+];
+
 const ExperienceForm = ({ onSubmit, onCancel, showCancel, initialData = null, isEditing = false }) => {
   const [formData, setFormData] = useState({
     company: '',
@@ -73,33 +113,20 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel, initialData = null, is
     setSkillSelectedIndex(-1);
   }, [skillSuggestions]);
 
-  // Skills autocomplete using Open Skills API
+  // Skills autocomplete using local array (instant, no API)
   useEffect(() => {
-    if (skillInput.length < 2) {
+    if (skillInput.length < 1) {
       setSkillSuggestions([]);
       return;
     }
-    
-    const controller = new AbortController();
-    fetch(`http://api.dataatwork.org/v1/skills/autocomplete?contains=${encodeURIComponent(skillInput)}`, {
-      signal: controller.signal
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          // Extract skill suggestions and filter out already added skills
-          const skills = data
-            .map(item => item.suggestion)
-            .filter(skill => !formData.skills.includes(skill))
-            .slice(0, 10);
-          setSkillSuggestions(skills);
-        }
-      })
-      .catch(() => {
-        console.log('Open Skills API search failed');
-        setSkillSuggestions([]);
-      });
-    return () => controller.abort();
+    const lowercaseQuery = skillInput.toLowerCase();
+    const filtered = commonSkills
+      .filter(skill => 
+        skill.toLowerCase().includes(lowercaseQuery) && 
+        !formData.skills.includes(skill)
+      )
+      .slice(0, 10);
+    setSkillSuggestions(filtered);
   }, [skillInput, formData.skills]);
 
   useEffect(() => {
@@ -677,7 +704,7 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel, initialData = null, is
               onFocus={() => setShowSkillSuggestions(true)}
               onBlur={() => setTimeout(() => setShowSkillSuggestions(false), 200)}
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-linkedin-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400"
-              placeholder="Type and press Enter to add skills (e.g., JavaScript, Leadership, Patient Care)"
+              placeholder="Type and press Enter to add skills (e.g., React, Python, AWS)"
             />
             {showSkillSuggestions && skillSuggestions.length > 0 && (
               <ul className="absolute z-10 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 w-full mt-1 rounded shadow-lg max-h-48 overflow-y-auto">
