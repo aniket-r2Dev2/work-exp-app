@@ -2,6 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Building2, MapPin, Calendar, Award, Trash2, Code2, X, Pencil } from 'lucide-react';
 import Input from '../common/Input';
 import Button from '../common/Button';
+import jobTitlesConfig from '../../config/jobTitles.json';
+
+// Extract all job titles from the config
+const allJobTitles = jobTitlesConfig.jobTitles.flatMap(category => category.titles);
+
+// Function to filter job titles based on search query
+const filterJobTitles = (query) => {
+  if (!query || query.length < 2) return [];
+  const lowercaseQuery = query.toLowerCase();
+  return allJobTitles
+    .filter(title => title.toLowerCase().includes(lowercaseQuery))
+    .slice(0, 15);
+};
 
 // Comprehensive skills list covering multiple industries
 const commonSkills = [
@@ -142,38 +155,14 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel, initialData = null, is
     return () => controller.abort();
   }, [companyQuery]);
 
-  // Job title autocomplete using Open Skills API
+  // Job title autocomplete using local jobTitles.json
   useEffect(() => {
     if (positionQuery.length < 2) {
       setPositionSuggestions([]);
       return;
     }
-    
-    const controller = new AbortController();
-    fetch(`http://api.dataatwork.org/v1/jobs/autocomplete?contains=${encodeURIComponent(positionQuery)}`, {
-      signal: controller.signal
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          // Extract job title suggestions and capitalize properly
-          const titles = data
-            .map(item => {
-              // Capitalize first letter of each word
-              return item.suggestion
-                .split(' ')
-                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                .join(' ');
-            })
-            .slice(0, 15);
-          setPositionSuggestions(titles);
-        }
-      })
-      .catch(() => {
-        console.log('Open Skills API search failed');
-        setPositionSuggestions([]);
-      });
-    return () => controller.abort();
+    const suggestions = filterJobTitles(positionQuery);
+    setPositionSuggestions(suggestions);
   }, [positionQuery]);
 
   useEffect(() => {
