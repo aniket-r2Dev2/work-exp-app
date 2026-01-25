@@ -1,29 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Building2, MapPin, Calendar, Award, Trash2, Code2, X, Pencil } from 'lucide-react';
 import Input from '../common/Input';
 import Button from '../common/Button';
 import jobTitlesConfig from '../../config/jobTitles.json';
 
-// Extract all job titles from the config
+// Extract all job titles from the config as FALLBACK
 const allJobTitles = jobTitlesConfig.jobTitles.flatMap(category => category.titles);
 
-// DEBUG: Log to verify jobTitles loaded
-console.log('Total job titles loaded:', allJobTitles.length);
-console.log('Sample titles:', allJobTitles.slice(0, 5));
-
-// Function to filter job titles based on search query
-const filterJobTitles = (query) => {
-  console.log('filterJobTitles called with query:', query);
-  if (!query || query.length < 2) {
-    console.log('Query too short, returning empty');
-    return [];
-  }
+// Function to filter job titles based on search query (FALLBACK)
+const filterJobTitlesLocally = (query) => {
+  if (!query || query.length < 2) return [];
   const lowercaseQuery = query.toLowerCase();
-  const filtered = allJobTitles
+  return allJobTitles
     .filter(title => title.toLowerCase().includes(lowercaseQuery))
     .slice(0, 15);
-  console.log('Filtered results:', filtered.length, filtered);
-  return filtered;
 };
 
 // Comprehensive skills list covering multiple industries
@@ -119,6 +109,9 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel, initialData = null, is
   const [showSkillSuggestions, setShowSkillSuggestions] = useState(false);
   const [skillSelectedIndex, setSkillSelectedIndex] = useState(-1);
 
+  // Debounce timer refs
+  const positionDebounceTimer = useRef(null);
+
   // Reset selected indices when suggestions change
   useEffect(() => {
     setCompanySelectedIndex(-1);
@@ -165,17 +158,56 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel, initialData = null, is
     return () => controller.abort();
   }, [companyQuery]);
 
-  // Job title autocomplete using local jobTitles.json
+  // Job title autocomplete using API with fallback to local
   useEffect(() => {
-    console.log('Position useEffect triggered, positionQuery:', positionQuery);
     if (positionQuery.length < 2) {
-      console.log('Position query too short, clearing suggestions');
       setPositionSuggestions([]);
       return;
     }
-    const suggestions = filterJobTitles(positionQuery);
-    console.log('Setting position suggestions:', suggestions);
-    setPositionSuggestions(suggestions);
+
+    // Clear previous timer
+    if (positionDebounceTimer.current) {
+      clearTimeout(positionDebounceTimer.current);
+    }
+
+    // Debounce API call by 300ms
+    positionDebounceTimer.current = setTimeout(() => {
+      const controller = new AbortController();
+      
+      // Try API first
+      fetch(`https://api.dataatwork.org/v1/jobs/autocomplete?begins_with=${encodeURIComponent(positionQuery)}`, {
+        signal: controller.signal
+      })
+        .then(res => {
+          if (!res.ok) throw new Error('API failed');
+          return res.json();
+        })
+        .then(data => {
+          if (data && Array.isArray(data) && data.length > 0) {
+            // API returned results
+            const titles = data.map(job => job.suggestion || job.title || job.normalized_job_title).filter(Boolean).slice(0, 15);
+            setPositionSuggestions(titles);
+          } else {
+            // API returned empty, use local fallback
+            const localResults = filterJobTitlesLocally(positionQuery);
+            setPositionSuggestions(localResults);
+          }
+        })
+        .catch(() => {
+          // API failed, use local fallback
+          console.log('Job titles API failed, using local fallback');
+          const localResults = filterJobTitlesLocally(positionQuery);
+          setPositionSuggestions(localResults);
+        });
+
+      return () => controller.abort();
+    }, 300);
+
+    return () => {
+      if (positionDebounceTimer.current) {
+        clearTimeout(positionDebounceTimer.current);
+      }
+    };
   }, [positionQuery]);
 
   useEffect(() => {
@@ -355,11 +387,9 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel, initialData = null, is
 
   const handlePositionInput = (e) => {
     const value = e.target.value;
-    console.log('handlePositionInput called with:', value);
     setPositionQuery(value);
     setFormData(prev => ({ ...prev, position: value }));
     setShowPositionSuggestions(true);
-    console.log('showPositionSuggestions set to true');
   };
 
   const handlePositionSelect = (title) => {
@@ -463,12 +493,6 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel, initialData = null, is
     }
   };
 
-  // DEBUG: Log state changes
-  useEffect(() => {
-    console.log('Position suggestions updated:', positionSuggestions.length, 'items');
-    console.log('showPositionSuggestions:', showPositionSuggestions);
-  }, [positionSuggestions, showPositionSuggestions]);
-
   return (
     <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-8 mb-8 border border-gray-100 dark:border-gray-700 animate-slide-up">
       <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6 flex items-center">
@@ -568,10 +592,9 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel, initialData = null, is
               placeholder="e.g., Software Engineer"
               required
               autoComplete="off"
-              onFocus={() => {console.log('Position input focused'); setShowPositionSuggestions(true);}}
+              onFocus={() => setShowPositionSuggestions(true)}
               onBlur={() => setTimeout(() => setShowPositionSuggestions(false), 200)}
             />
-            {console.log('Rendering position dropdown check:', showPositionSuggestions, positionSuggestions.length)}
             {showPositionSuggestions && positionSuggestions.length > 0 && (
               <ul className="absolute z-10 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 w-full mt-1 rounded shadow-lg max-h-48 overflow-y-auto top-full left-0">
                 {positionSuggestions.map((title, index) => (
