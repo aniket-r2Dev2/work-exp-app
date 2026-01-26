@@ -16,7 +16,7 @@ const filterJobTitlesLocally = (query) => {
     .slice(0, 15);
 };
 
-// Comprehensive skills list covering multiple industries
+// Comprehensive skills list covering multiple industries (FALLBACK)
 const commonSkills = [
   // Programming Languages
   'JavaScript', 'TypeScript', 'Python', 'Java', 'C++', 'C#', 'Go', 'Rust', 'Swift', 'Kotlin', 'PHP', 'Ruby', 'Scala', 'R', 'MATLAB',
@@ -55,6 +55,18 @@ const commonSkills = [
   'Microsoft Office', 'Excel', 'PowerPoint', 'Word', 'Slack', 'Zoom', 'Microsoft Teams', 'Documentation', 'Technical Writing',
   'Presentation Skills', 'Research', 'Data Entry', 'Quality Assurance', 'Troubleshooting'
 ];
+
+// Function to filter skills locally (FALLBACK)
+const filterSkillsLocally = (query, existingSkills) => {
+  if (!query || query.length < 1) return [];
+  const lowercaseQuery = query.toLowerCase();
+  return commonSkills
+    .filter(skill => 
+      skill.toLowerCase().includes(lowercaseQuery) && 
+      !existingSkills.includes(skill)
+    )
+    .slice(0, 10);
+};
 
 const ExperienceForm = ({ onSubmit, onCancel, showCancel, initialData = null, isEditing = false }) => {
   const [formData, setFormData] = useState({
@@ -111,6 +123,7 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel, initialData = null, is
 
   // Debounce timer refs
   const positionDebounceTimer = useRef(null);
+  const skillDebounceTimer = useRef(null);
 
   // Reset selected indices when suggestions change
   useEffect(() => {
@@ -129,20 +142,59 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel, initialData = null, is
     setSkillSelectedIndex(-1);
   }, [skillSuggestions]);
 
-  // Skills autocomplete using local array (instant, no API)
+  // Skills autocomplete using API with fallback to local
   useEffect(() => {
     if (skillInput.length < 1) {
       setSkillSuggestions([]);
       return;
     }
-    const lowercaseQuery = skillInput.toLowerCase();
-    const filtered = commonSkills
-      .filter(skill => 
-        skill.toLowerCase().includes(lowercaseQuery) && 
-        !formData.skills.includes(skill)
-      )
-      .slice(0, 10);
-    setSkillSuggestions(filtered);
+
+    // Clear previous timer
+    if (skillDebounceTimer.current) {
+      clearTimeout(skillDebounceTimer.current);
+    }
+
+    // Debounce API call by 300ms
+    skillDebounceTimer.current = setTimeout(() => {
+      const controller = new AbortController();
+      
+      // Try API first
+      fetch(`https://api.dataatwork.org/v1/skills/autocomplete?begins_with=${encodeURIComponent(skillInput)}`, {
+        signal: controller.signal
+      })
+        .then(res => {
+          if (!res.ok) throw new Error('API failed');
+          return res.json();
+        })
+        .then(data => {
+          if (data && Array.isArray(data) && data.length > 0) {
+            // API returned results
+            const skills = data
+              .map(skill => skill.suggestion || skill.skill_name || skill.name)
+              .filter(skill => skill && !formData.skills.includes(skill))
+              .slice(0, 10);
+            setSkillSuggestions(skills);
+          } else {
+            // API returned empty, use local fallback
+            const localResults = filterSkillsLocally(skillInput, formData.skills);
+            setSkillSuggestions(localResults);
+          }
+        })
+        .catch(() => {
+          // API failed, use local fallback
+          console.log('Skills API failed, using local fallback');
+          const localResults = filterSkillsLocally(skillInput, formData.skills);
+          setSkillSuggestions(localResults);
+        });
+
+      return () => controller.abort();
+    }, 300);
+
+    return () => {
+      if (skillDebounceTimer.current) {
+        clearTimeout(skillDebounceTimer.current);
+      }
+    };
   }, [skillInput, formData.skills]);
 
   useEffect(() => {
