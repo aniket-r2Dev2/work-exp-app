@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Building2, MapPin, Calendar, Award, Trash2, Code2, X, Pencil } from 'lucide-react';
 import Input from '../common/Input';
 import Button from '../common/Button';
 import jobTitlesConfig from '../../config/jobTitles.json';
 
-// Extract all job titles from the config as FALLBACK
+// Extract all job titles from the config
 const allJobTitles = jobTitlesConfig.jobTitles.flatMap(category => category.titles);
 
-// Function to filter job titles based on search query (FALLBACK)
-const filterJobTitlesLocally = (query) => {
+// Function to filter job titles based on search query
+const filterJobTitles = (query) => {
   if (!query || query.length < 2) return [];
   const lowercaseQuery = query.toLowerCase();
   return allJobTitles
@@ -16,7 +16,7 @@ const filterJobTitlesLocally = (query) => {
     .slice(0, 15);
 };
 
-// Comprehensive skills list covering multiple industries (FALLBACK)
+// Comprehensive skills list covering multiple industries
 const commonSkills = [
   // Programming Languages
   'JavaScript', 'TypeScript', 'Python', 'Java', 'C++', 'C#', 'Go', 'Rust', 'Swift', 'Kotlin', 'PHP', 'Ruby', 'Scala', 'R', 'MATLAB',
@@ -55,18 +55,6 @@ const commonSkills = [
   'Microsoft Office', 'Excel', 'PowerPoint', 'Word', 'Slack', 'Zoom', 'Microsoft Teams', 'Documentation', 'Technical Writing',
   'Presentation Skills', 'Research', 'Data Entry', 'Quality Assurance', 'Troubleshooting'
 ];
-
-// Function to filter skills locally (FALLBACK)
-const filterSkillsLocally = (query, existingSkills) => {
-  if (!query || query.length < 1) return [];
-  const lowercaseQuery = query.toLowerCase();
-  return commonSkills
-    .filter(skill => 
-      skill.toLowerCase().includes(lowercaseQuery) && 
-      !existingSkills.includes(skill)
-    )
-    .slice(0, 10);
-};
 
 const ExperienceForm = ({ onSubmit, onCancel, showCancel, initialData = null, isEditing = false }) => {
   const [formData, setFormData] = useState({
@@ -121,10 +109,6 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel, initialData = null, is
   const [showSkillSuggestions, setShowSkillSuggestions] = useState(false);
   const [skillSelectedIndex, setSkillSelectedIndex] = useState(-1);
 
-  // Debounce timer refs
-  const positionDebounceTimer = useRef(null);
-  const skillDebounceTimer = useRef(null);
-
   // Reset selected indices when suggestions change
   useEffect(() => {
     setCompanySelectedIndex(-1);
@@ -142,61 +126,23 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel, initialData = null, is
     setSkillSelectedIndex(-1);
   }, [skillSuggestions]);
 
-  // Skills autocomplete using API with fallback to local
+  // Skills autocomplete using local array (instant, no API)
   useEffect(() => {
     if (skillInput.length < 1) {
       setSkillSuggestions([]);
       return;
     }
-
-    // Clear previous timer
-    if (skillDebounceTimer.current) {
-      clearTimeout(skillDebounceTimer.current);
-    }
-
-    // Debounce API call by 300ms
-    skillDebounceTimer.current = setTimeout(() => {
-      const controller = new AbortController();
-      
-      // Try API first
-      fetch(`https://api.dataatwork.org/v1/skills/autocomplete?begins_with=${encodeURIComponent(skillInput)}`, {
-        signal: controller.signal
-      })
-        .then(res => {
-          if (!res.ok) throw new Error('API failed');
-          return res.json();
-        })
-        .then(data => {
-          if (data && Array.isArray(data) && data.length > 0) {
-            // API returned results
-            const skills = data
-              .map(skill => skill.suggestion || skill.skill_name || skill.name)
-              .filter(skill => skill && !formData.skills.includes(skill))
-              .slice(0, 10);
-            setSkillSuggestions(skills);
-          } else {
-            // API returned empty, use local fallback
-            const localResults = filterSkillsLocally(skillInput, formData.skills);
-            setSkillSuggestions(localResults);
-          }
-        })
-        .catch(() => {
-          // API failed, use local fallback
-          console.log('Skills API failed, using local fallback');
-          const localResults = filterSkillsLocally(skillInput, formData.skills);
-          setSkillSuggestions(localResults);
-        });
-
-      return () => controller.abort();
-    }, 300);
-
-    return () => {
-      if (skillDebounceTimer.current) {
-        clearTimeout(skillDebounceTimer.current);
-      }
-    };
+    const lowercaseQuery = skillInput.toLowerCase();
+    const filtered = commonSkills
+      .filter(skill => 
+        skill.toLowerCase().includes(lowercaseQuery) && 
+        !formData.skills.includes(skill)
+      )
+      .slice(0, 10);
+    setSkillSuggestions(filtered);
   }, [skillInput, formData.skills]);
 
+  // Company autocomplete using Clearbit API
   useEffect(() => {
     if (companyQuery.length < 2) {
       setCompanySuggestions([]);
@@ -210,64 +156,22 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel, initialData = null, is
     return () => controller.abort();
   }, [companyQuery]);
 
-  // Job title autocomplete using API with fallback to local
+  // Job title autocomplete using local jobTitles.json (instant, no API)
   useEffect(() => {
     if (positionQuery.length < 2) {
       setPositionSuggestions([]);
       return;
     }
-
-    // Clear previous timer
-    if (positionDebounceTimer.current) {
-      clearTimeout(positionDebounceTimer.current);
-    }
-
-    // Debounce API call by 300ms
-    positionDebounceTimer.current = setTimeout(() => {
-      const controller = new AbortController();
-      
-      // Try API first
-      fetch(`https://api.dataatwork.org/v1/jobs/autocomplete?begins_with=${encodeURIComponent(positionQuery)}`, {
-        signal: controller.signal
-      })
-        .then(res => {
-          if (!res.ok) throw new Error('API failed');
-          return res.json();
-        })
-        .then(data => {
-          if (data && Array.isArray(data) && data.length > 0) {
-            // API returned results
-            const titles = data.map(job => job.suggestion || job.title || job.normalized_job_title).filter(Boolean).slice(0, 15);
-            setPositionSuggestions(titles);
-          } else {
-            // API returned empty, use local fallback
-            const localResults = filterJobTitlesLocally(positionQuery);
-            setPositionSuggestions(localResults);
-          }
-        })
-        .catch(() => {
-          // API failed, use local fallback
-          console.log('Job titles API failed, using local fallback');
-          const localResults = filterJobTitlesLocally(positionQuery);
-          setPositionSuggestions(localResults);
-        });
-
-      return () => controller.abort();
-    }, 300);
-
-    return () => {
-      if (positionDebounceTimer.current) {
-        clearTimeout(positionDebounceTimer.current);
-      }
-    };
+    const suggestions = filterJobTitles(positionQuery);
+    setPositionSuggestions(suggestions);
   }, [positionQuery]);
 
+  // Location autocomplete using GeoDB Cities API
   useEffect(() => {
     if (locationQuery.length < 3) {
       setLocationSuggestions([]);
       return;
     }
-    // Use GeoDB Cities API for location suggestions
     const controller = new AbortController();
     fetch(`https://geodb-free-service.wirefreethought.com/v1/geo/cities?limit=10&offset=0&namePrefix=${encodeURIComponent(locationQuery)}`, {
       signal: controller.signal
@@ -280,7 +184,6 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel, initialData = null, is
         }
       })
       .catch(() => {
-        console.log('GeoDB API search failed');
         setLocationSuggestions([]);
       });
     return () => controller.abort();
@@ -314,7 +217,6 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel, initialData = null, is
         setCompanySelectedIndex(-1);
         break;
       default:
-        // Handle other keys normally
         break;
     }
   };
@@ -346,7 +248,6 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel, initialData = null, is
         setPositionSelectedIndex(-1);
         break;
       default:
-        // Handle other keys normally
         break;
     }
   };
@@ -378,7 +279,6 @@ const ExperienceForm = ({ onSubmit, onCancel, showCancel, initialData = null, is
         setLocationSelectedIndex(-1);
         break;
       default:
-        // Handle other keys normally
         break;
     }
   };
